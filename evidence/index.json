@@ -1,0 +1,26 @@
+{
+  "format": "sandbox-evidence-index-1",
+  "description": "Portable navigation only. No execution, policy or production admission semantics.",
+  "entries": [
+    {
+      "id": "synthetic-format-record",
+      "kind": "synthetic",
+      "path": "examples/synthetic-trial.md",
+      "sha256": "17d947c9fcdff9adc3c687907f6289aa7250067c88ff96195fe298d1732df12f",
+      "scope": "format demonstration only",
+      "real_execution": "not-run",
+      "independent_review": "not-performed",
+      "adoption": "not-adopted"
+    },
+    {
+      "id": "synthetic-format-bundle",
+      "kind": "synthetic",
+      "path": "examples/evidence-bundle.fixture.json",
+      "sha256": "898df549a2583e66226959c656186e10dbf0626b30bc221444299cbaaf9b1481",
+      "scope": "format demonstration only",
+      "real_execution": "not-run",
+      "independent_review": "not-performed",
+      "adoption": "not-adopted"
+    }
+  ]
+}

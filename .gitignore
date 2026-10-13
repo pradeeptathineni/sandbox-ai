@@ -1,0 +1,12 @@
+# Private trial data and local work never enter the portable repository.
+private/
+local/
+raw/
+.env
+.env.*
+*.jsonl
+*.log
+__pycache__/
+.venv/
+node_modules/
+.DS_Store

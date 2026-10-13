@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "bundle_id": "synthetic-format-01",
+  "mode": "fixture",
+  "created_at": "2026-10-13T00:00:00Z",
+  "producer": {
+    "repository": "sandbox-ai-fixture",
+    "commit": "0000000000000000000000000000000000000000",
+    "protocol": "signals-evidence-v1"
+  },
+  "need": {
+    "query": "Demonstrate a failed synthetic formatting arm without a recommendation to execute."
+  },
+  "sources": [
+    {
+      "id": "fictional-table",
+      "uri": "https://example.org/synthetic-format-01",
+      "title": "Invented formatting trial table",
+      "source_class": "fixture",
+      "revision": null,
+      "independence_group": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "fictional-failure",
+      "text": "In this invented example, the compact arm omits the required cause field.",
+      "source_ids": [
+        "fictional-table"
+      ],
+      "status": "observed"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "fictional-compact",
+      "name": "Fictional compact report",
+      "canonical_uri": "https://example.org/fictional-compact",
+      "claim_ids": [
+        "fictional-failure"
+      ],
+      "disposition": "defer",
+      "reason": "Synthetic demonstration only. A real authorized trial would be needed.",
+      "limitations": [
+        "No execution, independent review, adoption or human usefulness."
+      ]
+    }
+  ],
+  "limitations": [
+    "All attempts and timings are invented. URLs are identifiers only. Fixture mode cannot become production evidence."
+  ]
+}
