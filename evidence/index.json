@@ -21,6 +21,26 @@
       "real_execution": "not-run",
       "independent_review": "not-performed",
       "adoption": "not-adopted"
+    },
+    {
+      "id": "watchexec-polling-report-2026-10-14",
+      "kind": "real",
+      "path": "evidence/watchexec-polling/report.md",
+      "sha256": "778601b2397b9ef83864077d2f266dce1a31d0d22cd89780957d57dfd9d12ec7",
+      "scope": "Bounded real Watchexec execution on authored synthetic Python/JS inputs; no raw private receipts",
+      "real_execution": "completed",
+      "independent_review": "not-performed",
+      "adoption": "not-adopted"
+    },
+    {
+      "id": "watchexec-polling-results-2026-10-14",
+      "kind": "real",
+      "path": "evidence/watchexec-polling/results.json",
+      "sha256": "9cd17e512b0fa8f0dc37f585cd3b805408a757e781ca30ac41cb0fc5e85cacad",
+      "scope": "Bounded real Watchexec execution on authored synthetic Python/JS inputs; no raw private receipts",
+      "real_execution": "completed",
+      "independent_review": "not-performed",
+      "adoption": "not-adopted"
     }
   ]
 }

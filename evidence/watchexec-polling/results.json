@@ -1,0 +1,76 @@
+{
+  "title": "Watchexec polling for a bounded synthetic edit-test loop",
+  "synthetic_outcomes": {
+    "scope": "Authored Python/JavaScript assertions in a disposable directory; no private project or session input",
+    "earlier_native_arm": "Only the initial check ran; saved edits, burst, assertion failure and recovery were missed. This is a historical comparison, not a simultaneous backend benchmark.",
+    "polling_90s_arm": "Every intended changed digest and failure/recovery was detected, but one redundant check occurred during a combined ignored/outside-write phase.",
+    "isolation_45s_arm": "Ignored-file creation and a root-directory timestamp change each emitted one directory-only Modify(Metadata(WriteTime)) event. Ignored-file modification and separate outside-root modification/creation caused no checks. Startup was one expected dispatch with no event tags.",
+    "jaq_60s_arm": "A filter excluding directory-only events preserved eight intended checks and removed the redundant checks. Shutdown did not complete; bounded owned-process cleanup was required. A separate short diagnostic logged EOF and main-loop completion but still did not exit within12 seconds. No general cause is established.",
+    "guard_45s_arm": {
+      "intended_checks": 8,
+      "command_dispatches": 10,
+      "directory_only_dispatches_skipping_checker": 2,
+      "save_to_completion_ms": {
+        "minimum": 440.967,
+        "maximum": 715.261
+      },
+      "idle_without_extra_checks_seconds": 20.308,
+      "graceful_exit": "Stdin close exited within3 seconds, status0; recorded owned processes and group were absent.",
+      "verified": [
+        "Initial check exactly once",
+        "Normal and atomic save",
+        "Watched-file creation/removal",
+        "Rapid burst final digest",
+        "Assertion failure then recovery",
+        "Ignored file and outside-root changes",
+        "Directory metadata suppression",
+        "Idle stability and cleanup"
+      ]
+    }
+  },
+  "measured_resource_costs": {
+    "guard_arm_seconds": 45,
+    "aggregate_reaped_child_cpu_seconds": 2.027206,
+    "maximum_child_rss_mib": 34.832,
+    "interpretation": "Includes the eight synthetic checkers and ten event-wrapper dispatches. Not isolated watcher memory or idle CPU, not a matched throughput benchmark, and not token or human productivity savings."
+  },
+  "source_provenance": {
+    "tool": "Watchexec2.8.0",
+    "publisher": "watchexec/watchexec",
+    "release": "https://github.com/watchexec/watchexec/releases/tag/v2.8.0",
+    "source_commit": "07e2b99e833da655571fc4001ae47b03f44742c7",
+    "manual": "https://github.com/watchexec/watchexec/blob/07e2b99e833da655571fc4001ae47b03f44742c7/doc/watchexec.1.md",
+    "tested_artifact": "Official x86_64 Apple Darwin executable, unsigned; publisher/archive checks were retained in prior provenance receipts",
+    "binary_sha256": "ee3e1fc92044e9808c39556c65be59ce25d134fa3c24f55a0452c121d2a35cca",
+    "integrity_limit": "Digest identity and source provenance are not a complete security audit"
+  },
+  "conditional_recommendation": {
+    "use": "Opt-in foreground fast checks over an explicit small source root",
+    "options": [
+      "--shell=none",
+      "--poll=500ms",
+      "--debounce",
+      "250ms",
+      "--on-busy-update",
+      "queue",
+      "--exts",
+      "<source-extensions>",
+      "--stdin-quit",
+      "--no-follow-symlinks",
+      "--emit-events-to",
+      "json-stdio"
+    ],
+    "guard_rule": "Run the initial empty dispatch and file/unknown-type events. Skip the expensive checker only when dispatch path tags exist and every path is a known directory. Avoid the tested jaq filter route.",
+    "footprint": "No global install, daemon, shell-profile change, project wiring, model call or private IPC. Execution permission removed from trial copies after cleanup."
+  },
+  "limitations": [
+    "One synthetic short-run sequence; production and long-term reliability unmeasured",
+    "Directory-only events still launch the small command guard",
+    "Moving a populated directory may yield only directory tags; run a manual full check after structural changes",
+    "Configuration/dependency files require deliberate inclusion in real projects",
+    "Same-byte saves, queued slow-job behavior, active-child interruption and full suites untested",
+    "Polling does not repair or attribute the original native-event failure",
+    "No claim of universal session visibility"
+  ],
+  "privacy_boundary": "This draft excludes usernames, absolute machine paths, session identities/content, account/usage information, private logs, process IDs and internal approval history."
+}
