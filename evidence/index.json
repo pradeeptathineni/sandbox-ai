@@ -41,6 +41,16 @@
       "real_execution": "completed",
       "independent_review": "not-performed",
       "adoption": "not-adopted"
+    },
+    {
+      "id": "runner-0.16.2-source-review",
+      "kind": "real",
+      "path": "evidence/runner-0.16.2-source-review.md",
+      "sha256": "1e85c8a6114edec5328e99d5e1a098d313c892ff7aa590ff25cb8865ff875f82",
+      "scope": "Pinned source assessment for Intel macOS; no candidate execution or adoption",
+      "real_execution": "not-run",
+      "independent_review": "accepted-source-only-with-trust-seeding-qualification",
+      "adoption": "not-adopted"
     }
   ]
 }
