@@ -61,6 +61,26 @@
       "real_execution": "partial",
       "independent_review": "accepted-document-and-retained-evidence-scope",
       "adoption": "not-adopted"
+    },
+    {
+      "id": "sonnet-haiku-prior-art-2026-10-15",
+      "kind": "real",
+      "path": "evidence/sonnet-haiku-prior-art-2026-10-15/report.md",
+      "sha256": "749ed1ebe1c93ede02ad39193de0d46b8ad1480500768c7b6670213b28f72608",
+      "scope": "One Sonnet selection, attempted then repaired Haiku local trials and root-routed Luna artifacts; synthetic inputs, failures and report corrections retained",
+      "real_execution": "completed",
+      "independent_review": "accepted-corrected-sanitized-summary-binding-only; raw trials, support archive and canonical publication not independently verified",
+      "adoption": "not-adopted"
+    },
+    {
+      "id": "sonnet-haiku-prior-art-results-2026-10-15",
+      "kind": "real",
+      "path": "evidence/sonnet-haiku-prior-art-2026-10-15/results.json",
+      "sha256": "1067f4d77116c2fa436ad5823ed06d5c2c737fbe71011a45c46903f4d82dcc86",
+      "scope": "One Sonnet selection, attempted then repaired Haiku local trials and root-routed Luna artifacts; synthetic inputs, failures and report corrections retained",
+      "real_execution": "completed",
+      "independent_review": "accepted-corrected-sanitized-summary-binding-only; raw trials, support archive and canonical publication not independently verified",
+      "adoption": "not-adopted"
     }
   ]
 }

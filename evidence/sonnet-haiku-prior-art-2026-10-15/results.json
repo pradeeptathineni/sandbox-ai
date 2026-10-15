@@ -1,0 +1,344 @@
+{
+  "recordId": "sonnet-haiku-prior-art-2026-10-15",
+  "recordKind": "real model-assisted evaluation and authored local trials",
+  "observedDate": "2026-10-15",
+  "source": {
+    "contextRevision": "4f743da2bb1440d313b0fa29b465fdd4edb69737",
+    "contextOutputSHA256": "ab4690ec6ee860c5fef6403571fe95f944a4cfe9dd51ee527c8e22504a4b9ca1",
+    "contextUsageSHA256": "5ee29b673405c2e54f08b63c994d4ab18ab92d91f206dd7059933b510eb77435",
+    "runnerRevision": "feb2f6804f7f0f8d35e89c2a76e6088b4df3ce43",
+    "agentReachRevision": "94f06c1969dfc1834001269d79d3ad0972d9dee6",
+    "runnerExecutionThisCycle": "not-run",
+    "agentReachExecutionThisCycle": "not-run"
+  },
+  "sonnet": {
+    "requestedModel": "claude-sonnet-5-5",
+    "reportedModels": [
+      "claude-sonnet-5-5"
+    ],
+    "effort": "high",
+    "wallMs": 288655,
+    "turns": 21,
+    "toolCalls": 20,
+    "status": "completed",
+    "scopeViolations": 0,
+    "usage": {
+      "input_tokens": 10,
+      "cache_creation_input_tokens": 82785,
+      "cache_read_input_tokens": 61658,
+      "output_tokens": 39632,
+      "output_tokens_details": {
+        "thinking_tokens": 19887
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 82785,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "listPriceEstimateUSD": 0.7398115999999999,
+    "estimateMeaning": "Reported API list basis; not a subscription bill or charge.",
+    "ownedGroupAbsent": true,
+    "deviations": [
+      "Report701whitespacewords against700; source-predictions not tested bySonnet; actualtoolsincludeGlob despite narrower selfdescription."
+    ]
+  },
+  "haiku": [
+    {
+      "id": "H1",
+      "task": "T1initial",
+      "startUTC": "2026-10-15T22:53:39.858868+00:00",
+      "requestedSelector": "haiku",
+      "reportedModel": "claude-haiku-4-5-20251001",
+      "effortRequested": null,
+      "status": "failed",
+      "wallMs": 23419,
+      "turns": null,
+      "toolCalls": 4,
+      "reason": "RuntimeError: unapproved_tool_or_path",
+      "candidateCommandExecuted": false,
+      "reportedTerminalUsage": null,
+      "reportedListEstimateUSD": null,
+      "listEstimateMeaning": "Not a subscription bill/charge; missing terminal usage remains unknown.",
+      "ownedGroupAbsent": true,
+      "readonlyExact": true,
+      "baselineFrozenBeforeGuidance": null,
+      "phaseExposure": false,
+      "scopeViolations": [
+        {
+          "tool": "Bash",
+          "scope": "owned public workspace",
+          "summary": "Unlisted shell inspection of the owned baseline after native read-before-write refusal."
+        }
+      ],
+      "resultSHA256": "7bf77b954291fd9c28c6ecd06f7a5840221971fc482974a318978354bb753ffa"
+    },
+    {
+      "id": "H2",
+      "task": "T2initial",
+      "startUTC": "2026-10-15T22:53:41.489152+00:00",
+      "requestedSelector": "haiku",
+      "reportedModel": "claude-haiku-4-5-20251001",
+      "effortRequested": null,
+      "status": "failed",
+      "wallMs": 5695,
+      "turns": null,
+      "toolCalls": 2,
+      "reason": "RuntimeError: unapproved_tool_or_path",
+      "candidateCommandExecuted": false,
+      "reportedTerminalUsage": null,
+      "reportedListEstimateUSD": null,
+      "listEstimateMeaning": "Not a subscription bill/charge; missing terminal usage remains unknown.",
+      "ownedGroupAbsent": true,
+      "readonlyExact": true,
+      "baselineFrozenBeforeGuidance": null,
+      "phaseExposure": false,
+      "scopeViolations": [
+        {
+          "tool": "Read",
+          "scope": "owned public workspace",
+          "summary": "Extensionless filename inside public workspace rejected by exact-file monitor."
+        }
+      ],
+      "resultSHA256": "4674698ac1a7003197ae662f1b142b320f5fd0f9ad0462eb33a39adabf33eca8"
+    },
+    {
+      "id": "H3",
+      "task": "T2pathclarification",
+      "startUTC": "2026-10-15T22:55:04.879465+00:00",
+      "requestedSelector": "haiku",
+      "reportedModel": "claude-haiku-4-5-20251001",
+      "effortRequested": null,
+      "status": "failed",
+      "wallMs": 17677,
+      "turns": null,
+      "toolCalls": 9,
+      "reason": "RuntimeError: baseline_required_before_candidate",
+      "candidateCommandExecuted": false,
+      "reportedTerminalUsage": null,
+      "reportedListEstimateUSD": null,
+      "listEstimateMeaning": "Not a subscription bill/charge; missing terminal usage remains unknown.",
+      "ownedGroupAbsent": true,
+      "readonlyExact": true,
+      "baselineFrozenBeforeGuidance": null,
+      "phaseExposure": false,
+      "scopeViolations": [],
+      "resultSHA256": "97e5a6d14b03dce8a2c4fac6e8e28d2c79104d765780eb0ab2a49233cd689788"
+    },
+    {
+      "id": "H4",
+      "task": "T1repaired",
+      "startUTC": "2026-10-15T23:08:13.022278+00:00",
+      "requestedSelector": "haiku",
+      "reportedModel": "claude-haiku-4-5-20251001",
+      "effortRequested": null,
+      "status": "completed",
+      "wallMs": 60097,
+      "turns": 7,
+      "toolCalls": 6,
+      "reason": null,
+      "candidateCommandExecuted": true,
+      "reportedTerminalUsage": {
+        "input_tokens": 49,
+        "cache_creation_input_tokens": 16832,
+        "cache_read_input_tokens": 79876,
+        "output_tokens": 5840,
+        "output_tokens_details": {
+          "thinking_tokens": 1027
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16832,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reportedListEstimateUSD": 0.07090060000000001,
+      "listEstimateMeaning": "Not a subscription bill/charge; missing terminal usage remains unknown.",
+      "ownedGroupAbsent": true,
+      "readonlyExact": true,
+      "baselineFrozenBeforeGuidance": true,
+      "phaseExposure": false,
+      "scopeViolations": [],
+      "resultSHA256": "61662d6e2c575df1b0f1fd17750db4f4a8088641bcb37c86197e630458e46e27"
+    },
+    {
+      "id": "H5",
+      "task": "T2repaired",
+      "startUTC": "2026-10-15T23:08:09.855192+00:00",
+      "requestedSelector": "haiku",
+      "reportedModel": "claude-haiku-4-5-20251001",
+      "effortRequested": null,
+      "status": "failed",
+      "wallMs": 60300,
+      "turns": null,
+      "toolCalls": 12,
+      "reason": "RuntimeError: unapproved_tool_or_path",
+      "candidateCommandExecuted": true,
+      "reportedTerminalUsage": null,
+      "reportedListEstimateUSD": null,
+      "listEstimateMeaning": "Not a subscription bill/charge; missing terminal usage remains unknown.",
+      "ownedGroupAbsent": true,
+      "readonlyExact": true,
+      "baselineFrozenBeforeGuidance": true,
+      "phaseExposure": false,
+      "scopeViolations": [
+        {
+          "tool": "Read",
+          "scope": "owned public workspace",
+          "summary": "Owned public work directory Read rejected by exact-file monitor."
+        }
+      ],
+      "resultSHA256": "8a9f1c7238b037e2137104725ac2f0c741a190debaebf06643938fd82d0ae0a0"
+    },
+    {
+      "id": "H6",
+      "task": "T2retained-artifactclosure",
+      "startUTC": "2026-10-15T23:11:08.713332+00:00",
+      "requestedSelector": "haiku",
+      "reportedModel": "claude-haiku-4-5-20251001",
+      "effortRequested": null,
+      "status": "completed",
+      "wallMs": 34726,
+      "turns": 7,
+      "toolCalls": 6,
+      "reason": null,
+      "candidateCommandExecuted": false,
+      "reportedTerminalUsage": {
+        "input_tokens": 41,
+        "cache_creation_input_tokens": 14851,
+        "cache_read_input_tokens": 55810,
+        "output_tokens": 3363,
+        "output_tokens_details": {
+          "thinking_tokens": 1970
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14851,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reportedListEstimateUSD": 0.052139000000000005,
+      "listEstimateMeaning": "Not a subscription bill/charge; missing terminal usage remains unknown.",
+      "ownedGroupAbsent": true,
+      "readonlyExact": true,
+      "baselineFrozenBeforeGuidance": null,
+      "phaseExposure": false,
+      "scopeViolations": [],
+      "resultSHA256": "f10b30975fd6e3dcb84db72391030a7e7171cb2991c7d72aaa4b9fb242f08f4e"
+    }
+  ],
+  "haikuOutcome": "Two repaired functional trials executed: T1 completed with report, T2 executed all tests and completed its report in a separate file-only recovery invocation. Six actual Haiku4.5 invocations total: three initial stops, two repaired parallel workers, one retained-output closure; no candidate/test rerun for closure. Root explicitly removed the author-imposed3call limit.",
+  "luna": {
+    "rootRequestedModel": "gpt-6-luna High",
+    "rootRoutingAccepted": true,
+    "actualServedModel": null,
+    "actualEffort": null,
+    "tokens": null,
+    "caseStatus": {
+      "T1": "completed after writable-root staging; prebaselineguidance contamination",
+      "T2": "completed; initialoriginalpacket baseline+driver beforecorrection then freshcopiedrerun"
+    },
+    "endToEndInferenceElapsedMs": null,
+    "localDriverApproxMs": {
+      "T1baseline": 548,
+      "T1candidate": 2230,
+      "T2candidate": 3100
+    },
+    "timingMeaning": "Local Python drivers only, not model inference latency.",
+    "baselineVsCandidate": "T1preexposed/no cleanbaselinebenefit; T2Q1\u2013Q6no correction over carefulbaseline; Q7observed current nativeprojection precedence."
+  },
+  "deterministicFindings": {
+    "T1": {
+      "actor": "HaikuH4 actual fixed-driver execution, Luna artifact review and independent SolT1 execution; raw/status/refusal output identities agree.",
+      "captureCases": 6,
+      "exactNativeRawAndStatus": 6,
+      "defaultNoisyCauseVisible": false,
+      "queryRecoversNoisyCauseLine": 5203,
+      "middleLongLineCauseInHelperViews": false,
+      "nativeByteSearchFindsMiddleCause": true,
+      "middleCauseByteOffset": 150007,
+      "endLongLineSuffixShowsCause": true,
+      "refusalChecks": [
+        "existinglog preserved",
+        "symlinktarget preserved",
+        "existingreceipt preserved",
+        "sideeffect absent",
+        "missingbinary durable failed-to-start with exitnull"
+      ],
+      "boundedHelperStdoutMaxBytes": 4096
+    },
+    "T2": {
+      "actor": "HaikuH5 actual fixed-driver execution/H6 retained-output review; Luna fixed-driver execution; Sol source/raw/output binding checks.",
+      "positiveInputs": 6,
+      "negativeInvocationsRefusedExit2EmptyStdout": 10,
+      "finalCumulativeInput": 250,
+      "firstToLastMovement": 150,
+      "decreaseFinalInput": 100,
+      "decreaseDiscontinuity": true,
+      "failedLatestTurnUsage": "missing, no prior-turn inheritance",
+      "missingVsZero": "null distinctfrom explicit0",
+      "requestedVsServed": "requested-A distinctfromserved-B",
+      "m1RequestedHint": "projectednull remainsnull despite callerhint; no genericprecedence guarantee"
+    }
+  },
+  "comparisonLimits": [
+    "Same helper/data/case criteria; repaired instructions and monitors, defaultHaikueffort versus requestedLunaHigh, runtime permissions/coordination and initialphaseexposure differ.",
+    "LunaT1 correctly identified nativebyte expansion for longmid; HaikuT1recommended --start even though actualrangeview missed it. This is a concrete report-quality difference on one case, not generalmodel superiority.",
+    "Both models actual test outputs preserve status/raw/counter/refusal boundaries. No corrected erroneous Q1\u2013Q6 decision was demonstrated. Haiku Q4 uncertainty was clarified without correcting a wrong assignment; measured productivity, human value and general helper benefit remain unestablished.",
+    "HaikuT2needed separate reportclosure; initialstops are not erased. LunaT1permissionstaging/T2originalpacketexecution andT1guidanceexposure remain.",
+    "Haiku terminalcounters exist for successfulcalls, not guard-stoppedcalls; Lunaprovideridentity/effort/counters/inferenceelapsed notexposed. No matchedspeed/tokens/costwinner.",
+    "No human evaluation, production adoption, new install, source acquisition, credential import, hooks or config changes."
+  ],
+  "adoption": "not-adopted; no production modification or consumerrefresh",
+  "review": "Sol exact source/input/output/negative/preservation checks and corrective assessment. Separate updated sanitized-summary review pending.",
+  "rawEvidence": "Retained by campaign task owner, with immutable manifests; sanitized portable record omits private filesystem/account/history bodies.",
+  "haikuReportCorrections": {
+    "T1": [
+      "Report says --start required for middle-of-line recovery; actual --start2 also missed it. Native byte expansion is necessary for this case.",
+      "Bounded JSON views do not prove token/context-overflow prevention or value in most cases.",
+      "Cause-recovery counts mixed absence/failure/N/A; do not treat missinglongmid as success."
+    ],
+    "T2": [
+      "Driver DID pass --requested-model caller-request; native-metrics parser replaced it with projected null. Blaming driver is incorrect.",
+      "Luna Q1\u2013Q6 matched its careful baseline. Haiku Q4 baseline expressed uncertainty about prior-turn usage without assigning it incorrectly; the receipt clarified missing latest-turn usage/no inheritance. Q7 was unknown and malformed cases were not all baseline-assessed, so all-results-match-baseline overstates coverage.",
+      "Latestfailedfixture has missing terminalusage; failurestatus alone does not prove every failedturn lacksusage."
+    ]
+  },
+  "operationalEnvironment": {
+    "claudeCLI": "2.1.285",
+    "driverPython": "/usr/bin/python3 3.9.6 with-I-S",
+    "toolBoundary": "Safe-mode/restricted publicworkspaces; exactfixedcommands and explicit filetools; not OSisolation",
+    "nativeSkillActivation": false,
+    "newInstalls": 0,
+    "newSourceFetchesForTrials": 0
+  },
+  "baselineQualification": {
+    "Luna": "Q1\u2013Q6 matched carefulbaseline.",
+    "Haiku": "Q4baseline said priorusageassignable unclear,differentturncontexts; didnotassignit. Candidateclarified latestturnmissing/noinheritance. Narrow uncertainty reduction, not a corrected erroneousassignment or generalbenefit.",
+    "reportLimit": "H6allresults matchbaseline is too broad, including thisQ4uncertainty plusunassessednegativecases/Q7."
+  }
+}
