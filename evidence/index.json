@@ -51,6 +51,16 @@
       "real_execution": "not-run",
       "independent_review": "accepted-source-only-with-trust-seeding-qualification",
       "adoption": "not-adopted"
+    },
+    {
+      "id": "agent-reach-1.5.0-public-trial",
+      "kind": "real",
+      "path": "evidence/agent-reach-1.5.0-public-trial.md",
+      "sha256": "091cb03dc68987d0a40143a6b6d988780f70c1fac7cc4a09cfc87ecb0991283c",
+      "scope": "Bounded public web/RSS and upstream-command trial; authenticated and subtitle access gaps preserved",
+      "real_execution": "partial",
+      "independent_review": "accepted-document-and-retained-evidence-scope",
+      "adoption": "not-adopted"
     }
   ]
 }
