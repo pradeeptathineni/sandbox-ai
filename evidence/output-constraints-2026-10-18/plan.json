@@ -1,0 +1,19 @@
+{
+  "record_kind": "real execution on synthetic inputs",
+  "decision": "Check an explicit saved-artifact word bound with a small opt-in native Python tool",
+  "source_repository": "https://github.com/pradeeptathineni/context-ai",
+  "context_base_commit": "4f743da2bb1440d313b0fa29b465fdd4edb69737",
+  "source_files_sha256": {
+    "scripts/check_word_limit.py": "cb7add3a4b1c1092bf5f554dff7ef1fb79cb1a81ce9acac1349c97b2863b9c0a",
+    "tests/test_word_limit.py": "61d58ce4072b6bdd1eaa6d4276886fb67cb37790312089d28469089e05097766"
+  },
+  "acceptance_frozen": [
+    "maximum 2 words rejects 3",
+    "same file repaired to 2 passes",
+    "later 4-word edit fails with a new digest",
+    "checker never changes input bytes"
+  ],
+  "operations": "Three local Python CLI calls on an owned synthetic file; no network or model",
+  "budget": "One fail/pass/fail sequence; stop after three calls",
+  "scope": "Deterministic bound detection only; no automatic repair, semantic judgment or generation-quality claim"
+}

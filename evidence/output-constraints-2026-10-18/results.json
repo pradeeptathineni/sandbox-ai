@@ -1,0 +1,61 @@
+{
+  "scope": "Deterministic execution on synthetic inputs; no generation trial",
+  "plan_sha256": "ea085f5faf68abe32c60b3d4b9bd2738960d3f68619cf66d84b7685da569e7d9",
+  "attempts": [
+    {
+      "phase": "oversize",
+      "input_utf8": "one two three\n",
+      "exit": 1,
+      "receipt": {
+        "sha256": "ef5b05a961b4c934b17999593e4b7253614d6c99d26d6e50b843e546d79e57e5",
+        "bytes": 14,
+        "words": 3,
+        "counting": "Python Unicode whitespace split; whole artifact",
+        "comparison": "le",
+        "limit": 2,
+        "passed": false
+      },
+      "seconds": 0.068043,
+      "input_unchanged": true
+    },
+    {
+      "phase": "repaired",
+      "input_utf8": "one two\n",
+      "exit": 0,
+      "receipt": {
+        "sha256": "2dbb4a503f1515636b6a54e7f5b1a8ccfddcb62f0571c8b57a2879c360d00346",
+        "bytes": 8,
+        "words": 2,
+        "counting": "Python Unicode whitespace split; whole artifact",
+        "comparison": "le",
+        "limit": 2,
+        "passed": true
+      },
+      "seconds": 0.066819,
+      "input_unchanged": true
+    },
+    {
+      "phase": "edited-after-pass",
+      "input_utf8": "one two three four\n",
+      "exit": 1,
+      "receipt": {
+        "sha256": "3b3d7cfed0cdfa82a1018c0078d4e576c7f70d42832c65daea9c23a17c0ab12f",
+        "bytes": 19,
+        "words": 4,
+        "counting": "Python Unicode whitespace split; whole artifact",
+        "comparison": "le",
+        "limit": 2,
+        "passed": false
+      },
+      "seconds": 0.06901,
+      "input_unchanged": true
+    }
+  ],
+  "expected_statuses": "3/3",
+  "review": "coordinator checks; independent review not claimed",
+  "model": null,
+  "model_usage": null,
+  "billed_cost": null,
+  "tested_source_commit": "750137272ee1f2a9702f054046805f8e91b061b6",
+  "commit_binding": "Added after execution; committed source bytes match the frozen pre-execution source hashes"
+}

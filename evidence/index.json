@@ -81,6 +81,26 @@
       "real_execution": "completed",
       "independent_review": "accepted-corrected-sanitized-summary-binding-only; raw trials, support archive and canonical publication not independently verified",
       "adoption": "not-adopted"
+    },
+    {
+      "id": "saved-output-limits-2026-10-18-report",
+      "kind": "real",
+      "path": "evidence/output-constraints-2026-10-18/report.md",
+      "sha256": "78d7570009d5dc32f515ad23892828842582fbd00688801ab20b5224ef0d32cd",
+      "scope": "Bounded deterministic Python execution on authored synthetic inputs; no model, private data or automatic repair",
+      "real_execution": "completed",
+      "independent_review": "not-performed",
+      "adoption": "not-adopted"
+    },
+    {
+      "id": "saved-output-limits-2026-10-18-results",
+      "kind": "real",
+      "path": "evidence/output-constraints-2026-10-18/results.json",
+      "sha256": "2b82d7212e195b7cd047523aeff5ba3e53581bd1ec7f1faa3d79cf139ae5f685",
+      "scope": "Bounded deterministic Python execution on authored synthetic inputs; no model, private data or automatic repair",
+      "real_execution": "completed",
+      "independent_review": "not-performed",
+      "adoption": "not-adopted"
     }
   ]
 }
