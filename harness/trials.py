@@ -319,6 +319,24 @@ def _measurement_errors(measurements):
     return errors
 
 
+def _plan_deviations(plan, identity):
+    deviations = []
+    for table in ('cases', 'rubrics'):
+        declared = {name: entry['sha256'] for name, entry in plan[table].items()}
+        if identity[table] != declared:
+            deviations.append({'field': f'identity.{table}', 'plan': declared, 'attempt': identity[table]})
+    return deviations
+
+
+def validate_sealed(record, plan):
+    """Apply the sealing contract to a stored attempt, so re-encoded bytes cannot bypass it."""
+    if set(record) != SEALED_KEYS or record['format'] != ATTEMPT_FORMAT:
+        raise TrialError('attempt fields do not match the sealed format')
+    validate_draft({key: record[key] for key in DRAFT_KEYS}, plan)
+    if record['plan_deviations'] != _plan_deviations(plan, record['identity']):
+        raise TrialError('plan_deviations do not match the bound plan')
+
+
 def seal_attempt(store, plan_sha, draft, sealed_at=None, receipt_root=None):
     """Seal one attempt. Failed, interrupted and blocked attempts are sealed exactly like completed ones."""
     plan = load_record(store, 'plans', plan_sha)
@@ -332,13 +350,8 @@ def seal_attempt(store, plan_sha, draft, sealed_at=None, receipt_root=None):
             elif sha256_file(path) != receipt['sha256']:
                 errors.append(f'receipt {receipt["reference"]} does not match its recorded sha256')
         refuse(errors)
-    deviations = []
-    for table in ('cases', 'rubrics'):
-        declared = {name: entry['sha256'] for name, entry in plan[table].items()}
-        if draft['identity'][table] != declared:
-            deviations.append({'field': f'identity.{table}', 'plan': declared, 'attempt': draft['identity'][table]})
     record = {**draft, 'format': ATTEMPT_FORMAT, 'plan_sha256': plan_sha,
-              'sealed_at_utc': sealed_at or utc_now(), 'plan_deviations': deviations}
+              'sealed_at_utc': sealed_at or utc_now(), 'plan_deviations': _plan_deviations(plan, draft['identity'])}
     digest = sha256_bytes(canonical(record))
     existing = attempts_for(store, plan_sha)
     for other_digest, other in existing:
@@ -355,7 +368,12 @@ def seal_attempt(store, plan_sha, draft, sealed_at=None, receipt_root=None):
 
 
 def verify_store(store):
-    """Re-hash every record, check plan bindings and report conflicting attempt ids."""
+    """Re-hash every record, re-apply the sealing contract against each bound plan and check id conflicts.
+
+    Hash agreement proves integrity of the bytes, not who sealed them: anyone can write a valid record under
+    its recomputed name. Authenticating the original sealer needs an independently trusted index of digests.
+    Receipt files are re-checked only by seal, which receives the receipt root.
+    """
     errors, counts = [], {'plans': 0, 'attempts': 0}
     for kind in counts:
         folder = Path(store) / kind
@@ -365,18 +383,24 @@ def verify_store(store):
                 if kind == 'plans':
                     validate_plan(record)
                 else:
-                    if set(record) != SEALED_KEYS or record['format'] != ATTEMPT_FORMAT:
-                        raise TrialError('attempt fields do not match the sealed format')
-                    load_record(store, 'plans', record['plan_sha256'])
+                    validate_sealed(record, load_record(store, 'plans', record['plan_sha256']))
                 counts[kind] += 1
-            except (TrialError, ValueError, KeyError) as exc:
+            except (TrialError, ValueError, KeyError, TypeError, AttributeError) as exc:
                 errors.append(f'{kind}/{path.name}: {exc}')
-    seen = {}
+    seen, per_arm = {}, {}
     for digest, record in _safe_attempts(store):
         key = (record['plan_sha256'], record['attempt_id'])
         if key in seen and seen[key] != digest:
             errors.append(f'attempt id {record["attempt_id"]} sealed twice with different content')
         seen.setdefault(key, digest)
+        per_arm.setdefault((record['plan_sha256'], record['arm']), set()).add(digest)
+    for (plan_sha, arm), digests in sorted(per_arm.items()):
+        try:
+            limit = load_record(store, 'plans', plan_sha)['budget']['max_attempts_per_arm']
+        except (TrialError, ValueError, KeyError, TypeError):
+            continue
+        if len(digests) > limit:
+            errors.append(f'arm {arm} of plan {plan_sha} holds {len(digests)} attempts over its budget of {limit}')
     return {'verified': not errors, 'counts': counts, 'errors': errors}
 
 
@@ -501,8 +525,8 @@ def check_closure(agent_roots, evaluator_roots):
 
 # --- comparison ------------------------------------------------------------------------------------------
 
-def _is_treatment(path, variables):
-    return any(path == v or path.startswith(v + '.') for v in variables)
+def _within(path, prefixes):
+    return any(path == p or path.startswith(p + '.') for p in prefixes)
 
 
 def control_identity(identity):
@@ -517,11 +541,12 @@ def compare_pair(plan, a, b):
     unknown_either = a['unknown'].keys() | b['unknown'].keys()
     for path in sorted(left.keys() | right.keys()):
         lv, rv = left.get(path, '<absent>'), right.get(path, '<absent>')
-        if lv == rv or (path in unknown_either and not _is_treatment(path, variables)):
+        # An unknown field also covers the other side's observed descendants, e.g. runtime vs runtime.python.
+        if lv == rv or (_within(path, unknown_either) and not _within(path, variables)):
             continue
         row = {'field': f'identity.{path}', 'a': lv, 'b': rv}
-        (declared if _is_treatment(path, variables) else unexpected).append(row)
-    unknown = sorted(p for p in unknown_either if not _is_treatment(p, variables))
+        (declared if _within(path, variables) else unexpected).append(row)
+    unknown = sorted(p for p in unknown_either if not _within(p, variables))
     deviations = a['plan_deviations'] + b['plan_deviations']
     flags = []
     for side, rec in (('a', a), ('b', b)):
@@ -582,6 +607,14 @@ def _compare_results(plan, a, b):
 def compare(store, plan_sha):
     plan = load_record(store, 'plans', plan_sha)
     attempts = sorted(attempts_for(store, plan_sha), key=lambda item: item[1]['attempt_id'])
+    errors = []
+    for digest, record in attempts:
+        try:
+            validate_sealed(record, plan)
+        except (TrialError, KeyError, TypeError, AttributeError) as exc:
+            errors.append(f'attempts/{digest}.json: {exc}')
+    if errors:
+        raise TrialError('refusing to compare invalid records: ' + '; '.join(errors))
     by_arm = {}
     for _, rec in attempts:
         by_arm.setdefault(rec['arm'], []).append(rec)

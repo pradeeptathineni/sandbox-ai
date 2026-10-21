@@ -5,7 +5,7 @@ import os
 import subprocess
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from harness import trials
@@ -141,6 +141,39 @@ class Comparison(StoreCase):
         pair = self.pair(make_attempt('a1'), other)
         self.assertEqual(pair['verdict'], 'insufficiently-identified')
         self.assertEqual(pair['unidentified_controls'][0]['b'], 'lock not recorded')
+
+    def unknown_runtime(self, attempt_id='b1', **changes):
+        attempt = make_attempt(attempt_id, 'equipped', runtime=None, **changes)
+        attempt['unknown'] = {'runtime': 'host runtime not recorded'}
+        return attempt
+
+    def test_unknown_parent_covers_observed_child_controls(self):
+        for order in ('unknown-second', 'unknown-first'):
+            with self.subTest(order):
+                self.fresh(order)
+                known, unknown = make_attempt('a1'), self.unknown_runtime()
+                pair = self.pair(*((known, unknown) if order == 'unknown-second' else (unknown, known)))
+                self.assertEqual(pair['verdict'], 'insufficiently-identified')
+                self.assertEqual(pair['unexpected_control_differences'], [])
+                row = pair['unidentified_controls'][0]
+                self.assertEqual(row['field'], 'identity.runtime')
+                self.assertIn('host runtime not recorded', (row['a'], row['b']))
+                self.assertTrue(pair['declared_treatment_differences'])
+
+    def test_unknown_parent_does_not_hide_other_observed_differences(self):
+        pair = self.pair(make_attempt('a1'), self.unknown_runtime(model__served='other-model'))
+        self.assertEqual(pair['verdict'], 'confounded')
+        self.assertEqual([d['field'] for d in pair['unexpected_control_differences']], ['identity.model.served'])
+        self.assertEqual([d['field'] for d in pair['unidentified_controls']], ['identity.runtime'])
+        self.assertTrue(all(d['field'].startswith('identity.equipment')
+                            for d in pair['declared_treatment_differences']))
+
+    def test_observed_runtime_controls_stay_confounded_or_comparable(self):
+        different = self.pair(make_attempt('a1'), make_attempt('b1', 'equipped', runtime={'python': '3.13'}))
+        self.assertEqual(different['verdict'], 'confounded')
+        self.assertEqual(different['unexpected_control_differences'][0]['field'], 'identity.runtime.python')
+        self.fresh('matching')
+        self.assertEqual(self.pair(make_attempt('a1'), make_attempt('b1', 'equipped'))['verdict'], 'comparable')
 
     def test_heterogeneous_arm_is_not_pooled(self):
         plan_sha = self.freeze()
@@ -356,6 +389,65 @@ class Cli(StoreCase):
         code, md = self.run_cli('compare', '--store', str(self.store), '--plan-sha256', plan_sha, '--format', 'markdown')
         self.assertEqual(code, 0)
         self.assertIn('| a1 | baseline | synthetic | synthetic-fixture | completed |', md)
+
+    def seal_via_cli(self, *attempts):
+        plan_path = Path(self.tmp.name, 'plan.json')
+        plan_path.write_text(json.dumps(make_plan()))
+        plan_sha = json.loads(self.run_cli('freeze-plan', '--store', str(self.store), '--plan', str(plan_path))[1])['plan_sha256']
+        for attempt in attempts:
+            path = Path(self.tmp.name, f'{attempt["attempt_id"]}.json')
+            path.write_text(json.dumps(attempt))
+            code, out = self.run_cli('seal', '--store', str(self.store), '--plan-sha256', plan_sha, '--attempt', str(path))
+            self.assertEqual(code, 0, out)
+        return plan_sha
+
+    def reencode(self, attempt_id, mutate):
+        """Edit a stored attempt and save it canonically under its recomputed hash, replacing the original."""
+        for path in (self.store / 'attempts').glob('*.json'):
+            record = json.loads(path.read_text())
+            if record['attempt_id'] == attempt_id:
+                mutate(record)
+                data = trials.canonical(record)
+                path.unlink()
+                (self.store / 'attempts' / f'{trials.sha256_bytes(data)}.json').write_bytes(data)
+                return
+        self.fail(f'no stored attempt {attempt_id}')
+
+    def compare_cli(self, plan_sha):
+        err = io.StringIO()
+        with redirect_stderr(err):
+            code, out = self.run_cli('compare', '--store', str(self.store), '--plan-sha256', plan_sha)
+        return code, out, err.getvalue()
+
+    def test_recomputed_hash_cannot_bypass_sealing_contract(self):
+        forgeries = {
+            'adopted without authority': lambda r: r['adoption'].update(status='adopted', authority=None, record=None),
+            'hidden plan deviation': lambda r: r['identity'].update(cases={'review': SHA['case2']}),
+            'synthetic counted as real': lambda r: r.update(record_kind='real'),
+        }
+        for label, mutate in forgeries.items():
+            with self.subTest(label):
+                self.fresh(label)
+                plan_sha = self.seal_via_cli(make_attempt('a1'), make_attempt('b1', 'equipped'))
+                self.reencode('b1', mutate)
+                code, out = self.run_cli('verify', '--store', str(self.store))
+                result = json.loads(out)
+                self.assertEqual(code, 1)
+                self.assertFalse(result['verified'])
+                self.assertEqual(len(result['errors']), 1, result['errors'])
+                code, out, err = self.compare_cli(plan_sha)
+                self.assertEqual((code, out), (2, ''))
+                self.assertIn('refusing to compare invalid records', err)
+
+    def test_valid_adoption_still_seals_verifies_and_compares(self):
+        adopted = make_attempt('b1', 'equipped')
+        adopted['adoption'] = {'status': 'adopted', 'authority': 'example owner', 'record': 'adoption-001'}
+        plan_sha = self.seal_via_cli(make_attempt('a1'), adopted)
+        code, out = self.run_cli('verify', '--store', str(self.store))
+        self.assertEqual((code, json.loads(out)['verified']), (0, True))
+        code, out, _ = self.compare_cli(plan_sha)
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(out)['attempts']['b1']['adoption'], 'adopted')
 
 
 if __name__ == '__main__':
