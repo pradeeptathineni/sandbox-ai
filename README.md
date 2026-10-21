@@ -6,7 +6,7 @@ Start with the [trial template](templates/trial.md), [evidence meanings](docs/ev
 
 Sandbox can evaluate tools, models, contexts and projects, including the systems that supply its own candidates and guidance. Its evidence can inform reusable Context equipment, private Custom choices or project-local decisions. Recommendations remain advisory.
 
-This repository contains documents and fixtures. Trial execution and isolation belong to the authorized native host or an existing reviewed recipe. It supplies no installer, runner, agent configuration, model calls, hooks or service. See [Context reuse](docs/context-reuse.md) for the existing contracts.
+Sandbox centralizes reusable evaluation harnesses, independent consumer and adversarial cases, versioned manifests, comparisons and results. Projects keep their own claims, acceptance criteria, domain cases and proof, and stay testable without Sandbox; Sandbox consumes their pinned versions. The [versioned trial harness](docs/harness.md) freezes plans, seals attempts and compares exact run identities using the standard library. The [Context consumer recipe](recipes/context-consumer/README.md) is its first client. Trial execution and isolation still belong to the authorized native host. Sandbox supplies no installer, agent configuration, model calls, hooks or service. See [Context reuse](docs/context-reuse.md) for the existing contracts.
 
 The [Watchexec polling report](evidence/watchexec-polling/report.md) records real bounded execution on synthetic inputs, including failures, resource limits and an advisory fast-check recommendation. It does not record production adoption.
 

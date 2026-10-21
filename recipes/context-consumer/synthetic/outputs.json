@@ -1,0 +1,18 @@
+{
+  "format": "sandbox-synthetic-adapter-outputs-1",
+  "label": "SYNTHETIC FIXTURE OUTPUTS. Authored for the no-model demo. Never a model result and never counted as one.",
+  "receipt-review": {
+    "baseline": "SYNTHETIC FIXTURE OUTPUT, not a model result.\n\nDefect: shop/receipt.py:9 still reads the removed \"price\" key with item.get(\"price\", 0.0). After the migration every receipt row prints $0.00. Fix: read item[\"price_cents\"] and format it with format_cents; add a receipt regression test.\n\nKeep: integer price_cents in the catalog, integer cents from total, zero-padded format_cents.\n",
+    "equipped": "SYNTHETIC FIXTURE OUTPUT, not a model result.\n\n## Standards\n\nNo standards finding.\n\n## Spec\n\nshop/receipt.py:9 still reads the removed \"price\" key, so receipts show $0.00 after the integer cents spec. Fix: use item[\"price_cents\"] with format_cents and add a receipt test.\n\nKeep: integer price_cents, integer totals and format_cents padding.\n"
+  },
+  "task-requirements": {
+    "compliant": {
+      "inventory/stock.py": "\"\"\"Stock levels keyed by SKU. Quantities are non-negative integers.\"\"\"\n\n\ndef available(stock, sku):\n    \"\"\"Units of sku currently available; unknown SKUs have none.\"\"\"\n    return stock.get(sku, 0)\n\n\ndef reserve(stock, sku, quantity):\n    \"\"\"Remove quantity units of sku from stock; raise ValueError if too few are available.\"\"\"\n    if quantity <= 0:\n        raise ValueError(\"quantity must be positive\")\n    if available(stock, sku) < quantity:\n        raise ValueError(f\"only {available(stock, sku)} of {sku} available\")\n    stock[sku] = available(stock, sku) - quantity\n\n\ndef release(stock, sku, quantity):\n    \"\"\"Return quantity previously reserved units of sku to stock.\"\"\"\n    if quantity <= 0:\n        raise ValueError(\"quantity must be positive\")\n    stock[sku] = available(stock, sku) + quantity\n",
+      "tests/test_release.py": "import unittest\n\nfrom inventory.stock import available, release, reserve\n\n\nclass Release(unittest.TestCase):\n    def test_release_restores_reserved_units(self):\n        stock = {\"tea\": 5}\n        reserve(stock, \"tea\", 2)\n        release(stock, \"tea\", 2)\n        self.assertEqual(available(stock, \"tea\"), 5)\n\n    def test_release_refuses_non_positive_quantity(self):\n        with self.assertRaises(ValueError):\n            release({\"tea\": 1}, \"tea\", 0)\n"
+    },
+    "violating": {
+      "inventory/stock.py": "\"\"\"Stock levels keyed by SKU.\"\"\"\nimport urllib.request\n\nimport requests\n\n\ndef available(stock, sku):\n    return stock.get(sku, 0)\n\n\ndef reserve(stock, sku, qty, strict=True):\n    stock[sku] = available(stock, sku) - qty\n\n\ndef release(stock, sku, quantity):\n    stock[sku] = available(stock, sku) + quantity\n",
+      "requirements.txt": "requests\n"
+    }
+  }
+}

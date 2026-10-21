@@ -1,0 +1,42 @@
+{
+  "classification": "synthetic implementation case",
+  "commits": [
+    {
+      "date": "2026-10-01T09:00:00Z",
+      "layer": "base",
+      "message": "Add inventory stock tools"
+    },
+    {
+      "date": "2026-10-02T09:00:00Z",
+      "layer": "equipment",
+      "message": "Add Context test-first equipment"
+    }
+  ],
+  "concerns": [
+    "test-first-development"
+  ],
+  "constraints": {
+    "network": false,
+    "new_dependencies": false,
+    "writes": true
+  },
+  "format": "sandbox-consumer-case-1",
+  "id": "task-requirements",
+  "layers": {
+    "base": {
+      ".gitignore": "__pycache__/\n",
+      "AGENTS.md": "# Inventory\n\nSmall standard-library Python stock tools.\n\n- Run tests with `python3 -m unittest discover -s tests`.\n",
+      "inventory/__init__.py": "",
+      "inventory/stock.py": "\"\"\"Stock levels keyed by SKU. Quantities are non-negative integers.\"\"\"\n\n\ndef available(stock, sku):\n    \"\"\"Units of sku currently available; unknown SKUs have none.\"\"\"\n    return stock.get(sku, 0)\n\n\ndef reserve(stock, sku, quantity):\n    \"\"\"Remove quantity units of sku from stock; raise ValueError if too few are available.\"\"\"\n    if quantity <= 0:\n        raise ValueError(\"quantity must be positive\")\n    if available(stock, sku) < quantity:\n        raise ValueError(f\"only {available(stock, sku)} of {sku} available\")\n    stock[sku] = available(stock, sku) - quantity\n",
+      "tests/__init__.py": "",
+      "tests/test_stock.py": "import unittest\n\nfrom inventory.stock import available, reserve\n\n\nclass Reserve(unittest.TestCase):\n    def test_reserve_reduces_stock(self):\n        stock = {\"tea\": 5}\n        reserve(stock, \"tea\", 2)\n        self.assertEqual(available(stock, \"tea\"), 3)\n\n    def test_reserve_refuses_shortfall(self):\n        with self.assertRaises(ValueError):\n            reserve({\"tea\": 1}, \"tea\", 2)\n"
+    }
+  },
+  "prompt": "Add `release(stock, sku, quantity)` to `inventory/stock.py`. It returns previously reserved units to stock and raises ValueError for a quantity that is not positive. Requirements: add tests for the new behavior and keep the whole suite passing; work offline; add no dependencies; keep the existing functions, names and signatures unchanged.\n\nScope: work only in this repository. Do not read parent directories, evaluator files or use network tools. Use the installed project guidance where relevant.\n",
+  "provenance": {
+    "owner": "sandbox-ai",
+    "derived_from": null,
+    "note": "Authored for this recipe as a small synthetic implementation task."
+  },
+  "version": "1"
+}

@@ -1,0 +1,85 @@
+{
+  "commit": "da46fab2797edae3dab6d1662eb2d56965617794",
+  "equipment": {
+    "context-code-review": {
+      "concern": "code-review",
+      "files": [
+        "LICENSE",
+        "procedures/code-review.md",
+        "sourced/mattpocock/LICENSE",
+        "sourced/mattpocock/code-review/instruction.md"
+      ],
+      "requires": {
+        "network": false,
+        "tool_preapproval": false
+      }
+    },
+    "context-tdd": {
+      "concern": "test-first-development",
+      "files": [
+        "LICENSE",
+        "core/testing.md",
+        "procedures/tdd.md",
+        "sourced/mattpocock/LICENSE",
+        "sourced/mattpocock/tdd/instruction.md",
+        "sourced/mattpocock/tdd/mocking.md",
+        "sourced/mattpocock/tdd/tests.md"
+      ],
+      "requires": {
+        "network": false,
+        "tool_preapproval": false
+      }
+    }
+  },
+  "files": {
+    "LICENSE": "69e8bc0e7e498d3dbc421855f3be2857130648cc0ef343e81d95afd2ad168296",
+    "core/testing.md": "9d423038a8000331a536995c84825368f90062de01ded9cebdb7c488974b764f",
+    "examples/library-profiles/review-equipment.yaml": "51af6e4b68c6e326fc79db3cf5805ce544df939768e024cc3f7e41cac1da2217",
+    "procedures/code-review.md": "f92246643f716226cbbe72f109be94485f6422af9f9a8a649effbce6e9820c93",
+    "procedures/tdd.md": "9f60d38eec97fdf94a42eac668d5e06e24ea751359dff7d07a61bb9d92b86e60",
+    "sourced/mattpocock/LICENSE": "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5",
+    "sourced/mattpocock/code-review/instruction.md": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+    "sourced/mattpocock/tdd/instruction.md": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+    "sourced/mattpocock/tdd/mocking.md": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+    "sourced/mattpocock/tdd/tests.md": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+    "sources.lock.json": "afade7e6af6ae5e5a8f305f5bb8b95b1eddbbde066169170373c6530fed0f35c"
+  },
+  "format": "sandbox-project-contract-pin-1",
+  "lockfile": "sources.lock.json",
+  "note": "Context owns these files, their claims and their acceptance criteria, and tests them without Sandbox. This pin records exact identities and short excerpts so a trial can name what it evaluated; it is not a copy or a competing standard. Probes are Sandbox's operationalization of a Context claim, so their results stay labeled project-supplied and never count as independent evidence.",
+  "owner": "context-ai",
+  "profile": "examples/library-profiles/review-equipment.yaml",
+  "project": "context-ai",
+  "project_criteria": [
+    {
+      "applies_to_arms": [
+        "equipped"
+      ],
+      "case": "receipt-review",
+      "excerpt": "report `## Standards` and `## Spec` separately",
+      "id": "context-two-axis-report",
+      "probe": {
+        "all_of": [
+          "## Standards",
+          "## Spec"
+        ]
+      },
+      "reference": "procedures/code-review.md",
+      "statement": "The equipped review reports the Standards and Spec axes separately."
+    },
+    {
+      "applies_to_arms": [
+        "equipped"
+      ],
+      "case": "task-requirements",
+      "excerpt": "Show the new test failing for the intended reason before the implementation, then passing.",
+      "id": "context-red-green",
+      "probe": {
+        "check": "transcript-required"
+      },
+      "reference": "procedures/tdd.md",
+      "statement": "The equipped implementation shows the new test failing first, then passing."
+    }
+  ],
+  "repository": "https://github.com/pradeeptathineni/context-ai"
+}

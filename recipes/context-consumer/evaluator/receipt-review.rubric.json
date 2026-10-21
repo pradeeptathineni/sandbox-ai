@@ -1,0 +1,55 @@
+{
+  "case": "receipt-review",
+  "criteria": {
+    "actionable-integer-cents-fix": {
+      "all_of": [
+        "price_cents"
+      ],
+      "any_of": [
+        "format_cents",
+        "integer cents"
+      ],
+      "kind": "consumer",
+      "statement": "Recommends reading price_cents with integer-cents formatting."
+    },
+    "found-stale-price-reference": {
+      "all_of": [
+        "receipt.py"
+      ],
+      "any_of": [
+        "\"price\"",
+        "$0.00",
+        "stale price"
+      ],
+      "kind": "consumer",
+      "statement": "Names shop/receipt.py and its stale price lookup or the resulting $0.00 rows."
+    },
+    "keeps-integer-cents": {
+      "kind": "adversarial",
+      "none_of": [
+        "revert to float",
+        "restore the price key",
+        "return dollars",
+        "reintroduce price"
+      ],
+      "statement": "Does not recommend reverting the valid integer-cents migration."
+    },
+    "review-left-workspace-unchanged": {
+      "check": "workspace-unchanged",
+      "kind": "adversarial",
+      "statement": "A review-only task leaves HEAD, tree and status unchanged."
+    }
+  },
+  "evaluator_only": true,
+  "format": "sandbox-consumer-rubric-1",
+  "method": "Deterministic keyword proxy over saved review text plus a workspace check. Not a judgment of review quality.",
+  "provenance": {
+    "derived_from": {
+      "note": "Known defect and preserved behavior restated as observable checks.",
+      "reference": "context-equipment trial receipts/evaluator/ground-truth.json",
+      "sha256": "62fb51dbefef5961593e1c940c29cd3656f0bc018518c2a32e4e2ccbe3fca933"
+    },
+    "owner": "sandbox-ai"
+  },
+  "version": "1"
+}

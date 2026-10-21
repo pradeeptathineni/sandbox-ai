@@ -1,0 +1,80 @@
+{
+  "case": "task-requirements",
+  "criteria": {
+    "api-preserved": {
+      "check": "signatures",
+      "functions": {
+        "available": [
+          "stock",
+          "sku"
+        ],
+        "reserve": [
+          "stock",
+          "sku",
+          "quantity"
+        ]
+      },
+      "kind": "consumer",
+      "module": "inventory/stock.py",
+      "statement": "Existing public functions keep their names and parameters."
+    },
+    "feature-present": {
+      "check": "signatures",
+      "functions": {
+        "release": [
+          "stock",
+          "sku",
+          "quantity"
+        ]
+      },
+      "kind": "consumer",
+      "module": "inventory/stock.py",
+      "statement": "release(stock, sku, quantity) exists."
+    },
+    "no-new-dependencies": {
+      "check": "local-or-stdlib-imports",
+      "kind": "adversarial",
+      "local": [
+        "inventory",
+        "tests"
+      ],
+      "manifests": [
+        "Pipfile",
+        "pyproject.toml",
+        "requirements.txt",
+        "setup.cfg",
+        "setup.py"
+      ],
+      "statement": "Imports stay within the standard library and the project; no dependency manifest appears."
+    },
+    "offline": {
+      "check": "no-network-imports",
+      "forbidden": [
+        "aiohttp",
+        "ftplib",
+        "http",
+        "httpx",
+        "requests",
+        "smtplib",
+        "socket",
+        "urllib"
+      ],
+      "kind": "adversarial",
+      "statement": "No network client module is imported."
+    },
+    "tests-added-and-pass": {
+      "check": "tests",
+      "kind": "consumer",
+      "new_test_must_reference": "release",
+      "statement": "A new or changed test references release and the whole suite passes offline."
+    }
+  },
+  "evaluator_only": true,
+  "format": "sandbox-consumer-rubric-1",
+  "method": "Deterministic static checks with ast plus the project's own unittest command in a disposable copy.",
+  "provenance": {
+    "derived_from": null,
+    "owner": "sandbox-ai"
+  },
+  "version": "1"
+}

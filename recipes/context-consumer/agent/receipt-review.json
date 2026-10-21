@@ -1,0 +1,60 @@
+{
+  "classification": "synthetic integration control",
+  "commits": [
+    {
+      "date": "2026-10-01T09:00:00Z",
+      "layer": "base",
+      "message": "Add shop catalog, cart and receipt"
+    },
+    {
+      "date": "2026-10-02T09:00:00Z",
+      "layer": "equipment",
+      "message": "Add Context review equipment"
+    },
+    {
+      "date": "2026-10-03T09:00:00Z",
+      "layer": "change",
+      "message": "Store catalog prices as integer cents"
+    }
+  ],
+  "concerns": [
+    "code-review"
+  ],
+  "constraints": {
+    "network": false,
+    "writes": false
+  },
+  "format": "sandbox-consumer-case-1",
+  "id": "receipt-review",
+  "layers": {
+    "base": {
+      ".gitignore": "__pycache__/\n",
+      "AGENTS.md": "# Shop\n\nSmall standard-library Python order tools.\n\n- Run tests with `python3 -m unittest discover -s tests`.\n- Specifications for changes live in `docs/specs/`.\n",
+      "CLAUDE.md": "@AGENTS.md\n",
+      "shop/__init__.py": "",
+      "shop/cart.py": "from shop.catalog import product\n\n\ndef total(lines):\n    \"\"\"Total price in dollars for (sku, quantity) lines.\"\"\"\n    return round(sum(product(sku)[\"price\"] * quantity for sku, quantity in lines), 2)\n",
+      "shop/catalog.py": "\"\"\"Product catalog: the single owner of product records.\"\"\"\n\nPRODUCTS = {\n    \"tea\": {\"name\": \"Green tea\", \"price\": 4.10},\n    \"mug\": {\"name\": \"Stoneware mug\", \"price\": 12.20},\n    \"spoon\": {\"name\": \"Tea spoon\", \"price\": 0.70},\n}\n\n\ndef product(sku):\n    \"\"\"Return the catalog record for sku; raise KeyError for an unknown sku.\"\"\"\n    return PRODUCTS[sku]\n",
+      "shop/receipt.py": "from shop.catalog import product\n\n\ndef render(lines):\n    \"\"\"Plain-text receipt with one row per (sku, quantity) line.\"\"\"\n    rows = []\n    for sku, quantity in lines:\n        item = product(sku)\n        unit = item.get(\"price\", 0.0)\n        rows.append(f\"{quantity} x {item['name']} @ ${unit:.2f}\")\n    return \"\\n\".join(rows)\n",
+      "tests/__init__.py": "",
+      "tests/test_cart.py": "import unittest\n\nfrom shop.cart import total\n\n\nclass Total(unittest.TestCase):\n    def test_sums_quantities(self):\n        self.assertEqual(total([(\"tea\", 2), (\"mug\", 1)]), 20.4)\n"
+    },
+    "change": {
+      "docs/specs/integer-cents.md": "# Store prices as integer cents\n\nFloating-point dollar prices make totals depend on rounding. Catalog records now store `price_cents`, an integer number of cents, instead of `price` in float dollars. `shop.cart.total` returns integer cents. Display code formats cents with `shop.money.format_cents`.\n",
+      "shop/cart.py": "from shop.catalog import product\n\n\ndef total(lines):\n    \"\"\"Total price in integer cents for (sku, quantity) lines.\"\"\"\n    return sum(product(sku)[\"price_cents\"] * quantity for sku, quantity in lines)\n",
+      "shop/catalog.py": "\"\"\"Product catalog: the single owner of product records.\"\"\"\n\nPRODUCTS = {\n    \"tea\": {\"name\": \"Green tea\", \"price_cents\": 410},\n    \"mug\": {\"name\": \"Stoneware mug\", \"price_cents\": 1220},\n    \"spoon\": {\"name\": \"Tea spoon\", \"price_cents\": 70},\n}\n\n\ndef product(sku):\n    \"\"\"Return the catalog record for sku; raise KeyError for an unknown sku.\"\"\"\n    return PRODUCTS[sku]\n",
+      "shop/money.py": "def format_cents(cents):\n    \"\"\"Format a non-negative integer number of cents as dollars, for example $20.40.\"\"\"\n    return f\"${cents // 100}.{cents % 100:02d}\"\n",
+      "tests/test_cart.py": "import unittest\n\nfrom shop.cart import total\n\n\nclass Total(unittest.TestCase):\n    def test_sums_quantities_in_cents(self):\n        self.assertEqual(total([(\"tea\", 2), (\"mug\", 1)]), 2040)\n\n    def test_cents_are_exact(self):\n        self.assertEqual(total([(\"spoon\", 3), (\"tea\", 1)]), 620)\n",
+      "tests/test_money.py": "import unittest\n\nfrom shop.money import format_cents\n\n\nclass FormatCents(unittest.TestCase):\n    def test_pads_cents(self):\n        self.assertEqual(format_cents(2040), \"$20.40\")\n        self.assertEqual(format_cents(5), \"$0.05\")\n"
+    }
+  },
+  "prompt": "Review the most recent commit in this repository; its fixed point is HEAD~1. Report each actionable defect with its file and line, what triggers it, its consequence and the fix you recommend. Then list behavior in the change that should be kept. This is a review only: do not edit files, commit, install anything or run commands that write.\n\nScope: inspect only files in this current repository. Do not read parent directories, sibling repositories, evaluator files, global personal files, or use network tools. Use the installed project guidance where relevant.\n",
+  "provenance": {
+    "derived_from": {
+      "note": "Synthetic shop files, commit metadata and prompt reproduced byte-for-byte so the reviewed diff can be checked against the saved native pair.",
+      "reference": "context-equipment trial receipts/scripts/build_native_fixtures.py",
+      "sha256": "8483e2d84eea2d3a0323e1026972eebe2a2fe829902393cf465ec04e46f556c3"
+    },
+    "owner": "sandbox-ai"
+  },
+  "version": "1"
+}

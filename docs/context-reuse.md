@@ -1,6 +1,6 @@
 # Reuse Context contracts
 
-Context AI owns existing evaluation, admission, supplied-counter interpretation and controlled execution contracts. Sandbox adds a portable trial worksheet and navigation only. Ordinary document work needs no Context checkout or installed resource.
+Context AI owns its claims, acceptance criteria and proof, plus its existing evidence admission, supplied-counter interpretation and controlled execution contracts. Sandbox owns the trial worksheet, navigation and a [versioned trial harness](harness.md) that consumes pinned Context criteria and adds independent consumer criteria. The [Context consumer recipe](../recipes/context-consumer/README.md) pins Context files by commit and hash and needs a caller-supplied Context path; ordinary document work needs no Context checkout or installed resource.
 
 The following source paths were inspected at Context commit `75acf9f5ec00cd8f6216f7be9b6534d163294a4d`. They are logical paths within that source, not machine locations. The source map below pins exact bytes. No original receipt or implementation body is copied here.
 
@@ -14,7 +14,7 @@ The following source paths were inspected at Context commit `75acf9f5ec00cd8f621
 
 To check the synthetic bundle with an available approved Context environment, use its existing schema validator and read-only `inspect_bundle` with `allow_fixture=True` and the exact index digest. A production admission must reject fixture mode. This check does not execute a trial or establish a result.
 
-Do not copy Context's orchestration, delivery or runtime into Sandbox. If a future record needs machine interchange, use its supported contract and preserve pins. Review changed source meanings before updating this reference. No model calls or paid checks are required.
+Do not copy Context's lifecycle, evidence-admission format, orchestration, delivery or runtime into Sandbox. The harness uses its own trial records, not evidence-bundle v1. If a future record needs machine interchange, use its supported contract and preserve pins. Review changed source meanings before updating this reference. No model calls or paid checks are required.
 
 ## Source identities
 

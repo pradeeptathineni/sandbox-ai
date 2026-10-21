@@ -42,6 +42,7 @@ REQUIRED_IDENTITY = (
     'model.provider', 'model.requested', 'model.served', 'model.settings', 'model.weights_snapshot',
     'harness.name', 'harness.version', 'runtime', 'toolchain', 'original_artifacts',
 )
+PER_ATTEMPT_IDENTITY = ('original_artifacts',)
 
 
 class TrialError(Exception):
@@ -91,7 +92,7 @@ def _is_sha256(value):
     return isinstance(value, str) and len(value) == 64 and all(c in '0123456789abcdef' for c in value)
 
 
-def _refuse(errors):
+def refuse(errors):
     if errors:
         raise TrialError('; '.join(errors))
 
@@ -107,7 +108,7 @@ def validate_plan(plan):
         errors.append(f'plan missing {sorted(missing)}')
     if extra:
         errors.append(f'plan has unsupported keys {sorted(extra)}')
-    _refuse(errors)
+    refuse(errors)
     if plan['format'] != PLAN_FORMAT:
         errors.append(f'plan format must be {PLAN_FORMAT}')
     if plan['record_kind'] not in RECORD_KINDS:
@@ -149,7 +150,7 @@ def validate_plan(plan):
     for key in ('agent_readable_roots', 'evaluator_only_roots', 'grader'):
         if key not in scope:
             errors.append(f'evaluator_scope.{key} required')
-    _refuse(errors)
+    refuse(errors)
 
 
 def _criterion_errors(criterion, cases):
@@ -234,7 +235,7 @@ def validate_draft(draft, plan):
         errors.append(f'attempt missing {sorted(missing)}')
     if extra:
         errors.append(f'attempt has unsupported keys {sorted(extra)}')
-    _refuse(errors)
+    refuse(errors)
     if draft['arm'] not in plan['treatment']['arms']:
         errors.append(f'arm {draft["arm"]} is not declared by the plan')
     if draft['record_kind'] not in RECORD_KINDS:
@@ -276,7 +277,7 @@ def validate_draft(draft, plan):
     for receipt in draft['receipts']:
         if not receipt.get('reference') or not _is_sha256(receipt.get('sha256')):
             errors.append('each receipt needs a reference and sha256')
-    _refuse(errors)
+    refuse(errors)
 
 
 def _identity_errors(identity, unknown):
@@ -330,7 +331,7 @@ def seal_attempt(store, plan_sha, draft, sealed_at=None, receipt_root=None):
                 errors.append(f'receipt {receipt["reference"]} not found under the receipt root')
             elif sha256_file(path) != receipt['sha256']:
                 errors.append(f'receipt {receipt["reference"]} does not match its recorded sha256')
-        _refuse(errors)
+        refuse(errors)
     deviations = []
     for table in ('cases', 'rubrics'):
         declared = {name: entry['sha256'] for name, entry in plan[table].items()}
@@ -504,9 +505,14 @@ def _is_treatment(path, variables):
     return any(path == v or path.startswith(v + '.') for v in variables)
 
 
+def control_identity(identity):
+    """Identity without per-attempt provenance; each attempt necessarily has its own original artifacts."""
+    return {k: v for k, v in identity.items() if k not in PER_ATTEMPT_IDENTITY}
+
+
 def compare_pair(plan, a, b):
     variables = [v['path'].removeprefix('identity.') for v in plan['treatment']['variables']]
-    left, right = flatten(a['identity']), flatten(b['identity'])
+    left, right = flatten(control_identity(a['identity'])), flatten(control_identity(b['identity']))
     declared, unexpected = [], []
     unknown_either = a['unknown'].keys() | b['unknown'].keys()
     for path in sorted(left.keys() | right.keys()):
@@ -582,7 +588,7 @@ def compare(store, plan_sha):
     arms = {}
     for arm in plan['treatment']['arms']:
         recs = by_arm.get(arm, [])
-        groups = {sha256_bytes(canonical(r['identity'])) for r in recs}
+        groups = {sha256_bytes(canonical(control_identity(r['identity']))) for r in recs}
         completed = [r for r in recs if r['execution']['status'] == 'completed']
         arms[arm] = {'attempts': [r['attempt_id'] for r in recs],
                      'statuses': {r['attempt_id']: r['execution']['status'] for r in recs},
