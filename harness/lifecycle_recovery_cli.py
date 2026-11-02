@@ -10,11 +10,20 @@ from . import lifecycle_recovery, trials
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', required=True, type=Path,
-                        help='caller-supplied sandbox-lifecycle-observations-1 JSON')
+                        help='legacy observations or sandbox-lifecycle-owner-snapshot-1 JSON')
+    parser.add_argument('--store', type=Path,
+                        help='trial store for owner snapshots; required only for owner-backed input')
     args = parser.parse_args(argv)
     try:
         observations = json.loads(args.input.read_bytes())
-        report = lifecycle_recovery.analyze(observations)
+        if isinstance(observations, dict) and observations.get('format') == lifecycle_recovery.OWNER_FORMAT:
+            if args.store is None:
+                parser.error('--store is required for owner-backed input')
+            report = lifecycle_recovery.analyze_owner_snapshots(args.store, observations)
+        else:
+            if args.store is not None:
+                parser.error('--store applies only to owner-backed input')
+            report = lifecycle_recovery.analyze(observations)
     except (OSError, ValueError, TypeError, KeyError) as exc:
         parser.error(str(exc))
     sys.stdout.buffer.write(trials.canonical(report))
