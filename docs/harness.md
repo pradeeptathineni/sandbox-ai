@@ -52,6 +52,10 @@ Packets can be cold-validated and rendered without the trial store. The packet r
 
 `harness.grounding_review` validates a frozen retrieval packet, masks arm names in a caller-supplied answer/evidence view, checks closed ratings, and reports descriptive two-reviewer agreement, disagreement and unknown counts. [Grounding calibration](grounding-calibration.md) freezes the exact rubric and caller-authored anchor ratings before review, then records reviews and corrections as append-only digest-linked events. Anchor agreement is descriptive only; reviewer identities and anchor labels are unauthenticated, and the workflow makes no real-world quality claim.
 
+## Claim evidence audit
+
+`harness.claim_evidence_registry` returns a canonical claim registry and audit from caller-supplied snapshots of existing packet and review records. `register` creates the first claim revision; `audit` cold-reads and revalidates a retained registry; `revise` requires a new claim revision plus explicitly supplied evidence/review references and rejects inherited SB08 reviewer/session IDs. A stale claim revision reports `proofInherited: false`. The module stores no records and makes no claim-truth or approval decision; see [claim evidence registry](claim-evidence-registry.md).
+
 ## Reuse
 
 The dataset/task/solver/scorer separation follows Inspect AI's `Task` API (`src/inspect_ai/_eval/task/task.py` at `9868e105fa6eb371395a909b9709423c92a88512`, MIT): cases are agent-readable inputs, the native host or synthetic adapter is the solver, and evaluator-only rubrics are the scorer. Only that concept is adopted. No Inspect code is copied or installed, and its runtime and scoring path were not verified.
