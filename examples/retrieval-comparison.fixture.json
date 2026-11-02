@@ -1,0 +1,49 @@
+{
+  "format": "sandbox-retrieval-comparison-1",
+  "corpus": {
+    "id": "synthetic-handbook-v1",
+    "source_ids": ["doc:alpha", "doc:beta", "doc:gamma", "doc:delta"]
+  },
+  "questions": [
+    {
+      "id": "q:policy",
+      "text": "Which page describes the appeal window?",
+      "ground_truth": {"status": "complete", "relevant_source_ids": ["doc:beta", "doc:gamma"]}
+    },
+    {
+      "id": "q:retention",
+      "text": "How long are receipts retained?",
+      "ground_truth": {"status": "partial", "relevant_source_ids": ["doc:delta"]}
+    },
+    {
+      "id": "q:exception",
+      "text": "Is there an exception for archived records?",
+      "ground_truth": {"status": "unknown", "relevant_source_ids": []}
+    }
+  ],
+  "cutoffs": [1, 3],
+  "arms": [
+    {
+      "strategy": "native-lexical-baseline",
+      "provenance": {"producer": "synthetic fixture", "version": "1", "reference": "MiniSearch-style frozen output"},
+      "corpus_id": "synthetic-handbook-v1",
+      "question_ids": ["q:policy", "q:retention", "q:exception"],
+      "rankings": {
+        "q:policy": ["doc:alpha", "doc:beta", "doc:gamma"],
+        "q:retention": ["doc:delta", "doc:alpha"],
+        "q:exception": ["doc:gamma"]
+      }
+    },
+    {
+      "strategy": "frozen-candidate-arm-example",
+      "provenance": {"producer": "synthetic fixture", "version": "1", "reference": "illustrative candidate list; no dense run implied"},
+      "corpus_id": "synthetic-handbook-v1",
+      "question_ids": ["q:policy", "q:retention", "q:exception"],
+      "rankings": {
+        "q:policy": ["doc:gamma", "doc:alpha", "doc:beta"],
+        "q:retention": ["doc:alpha", "doc:delta"],
+        "q:exception": ["doc:delta"]
+      }
+    }
+  ]
+}

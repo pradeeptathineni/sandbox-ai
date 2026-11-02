@@ -48,6 +48,10 @@ python3 -m harness.paired_comparison render --input comparison.json --format mar
 
 Packets can be cold-validated and rendered without the trial store. The packet records a handoff for the plan's named decision owner, but no adoption choice or authority. Its digest binds the selected receipts and caller review; a cold read does not regenerate missing source evidence.
 
+## Blinded evaluator calibration
+
+`harness.grounding_review` validates a frozen retrieval packet, masks arm names in a caller-supplied answer/evidence view, checks closed ratings, and reports descriptive two-reviewer agreement, disagreement and unknown counts. [Grounding calibration](grounding-calibration.md) freezes the exact rubric and caller-authored anchor ratings before review, then records reviews and corrections as append-only digest-linked events. Anchor agreement is descriptive only; reviewer identities and anchor labels are unauthenticated, and the workflow makes no real-world quality claim.
+
 ## Reuse
 
 The dataset/task/solver/scorer separation follows Inspect AI's `Task` API (`src/inspect_ai/_eval/task/task.py` at `9868e105fa6eb371395a909b9709423c92a88512`, MIT): cases are agent-readable inputs, the native host or synthetic adapter is the solver, and evaluator-only rubrics are the scorer. Only that concept is adopted. No Inspect code is copied or installed, and its runtime and scoring path were not verified.
