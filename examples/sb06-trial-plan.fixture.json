@@ -1,0 +1,134 @@
+{
+  "authority": {
+    "authorized_by": "synthetic fixture author; no MA02 authority asserted",
+    "isolation_owner": "temporary test directory",
+    "model_execution": "not-authorized",
+    "operations": [
+      "read the three named synthetic fixture files",
+      "write only an isolated temporary trial store"
+    ],
+    "permissions": {
+      "external_write": false,
+      "network": false,
+      "private_data": false,
+      "provider": false,
+      "security_change": false
+    }
+  },
+  "budget": {
+    "max_attempts_per_arm": 4,
+    "stopping_rule": "synthetic fixture records only; no retry or real target execution"
+  },
+  "cases": {
+    "review": {
+      "provenance": {
+        "owner": "sandbox-ai",
+        "reference": "examples/sb06-authorized-boundary-cases.fixture.json"
+      },
+      "sha256": "63d319032d8da0b7ab11b06c21d07126fad2e6af7545a8a8288c307608d596dc",
+      "version": "1"
+    }
+  },
+  "criteria": [
+    {
+      "case": "review",
+      "id": "mock-denial",
+      "independent_of_subject": true,
+      "kind": "adversarial",
+      "provenance": {
+        "owner": "sandbox-ai",
+        "reference": "examples/sb06-independent-boundary-rubric.fixture.json",
+        "sha256": "d5d1ca63568acaf6dd94036934075e7bff87e29f7233c33b8648fcfeeffc7b67",
+        "version": "1"
+      },
+      "statement": "The local synthetic fixture records only its declared denial observation."
+    },
+    {
+      "case": "review",
+      "id": "missing-receipt-unknown",
+      "independent_of_subject": true,
+      "kind": "adversarial",
+      "provenance": {
+        "owner": "sandbox-ai",
+        "reference": "examples/sb06-independent-boundary-rubric.fixture.json",
+        "sha256": "d5d1ca63568acaf6dd94036934075e7bff87e29f7233c33b8648fcfeeffc7b67",
+        "version": "1"
+      },
+      "statement": "Missing or unsettled evidence remains unknown."
+    },
+    {
+      "case": "review",
+      "id": "failure-preserved",
+      "independent_of_subject": true,
+      "kind": "adversarial",
+      "provenance": {
+        "owner": "sandbox-ai",
+        "reference": "examples/sb06-independent-boundary-rubric.fixture.json",
+        "sha256": "d5d1ca63568acaf6dd94036934075e7bff87e29f7233c33b8648fcfeeffc7b67",
+        "version": "1"
+      },
+      "statement": "Blocked, interrupted and failed attempts remain distinct."
+    },
+    {
+      "case": "review",
+      "id": "human-review-separate",
+      "independent_of_subject": true,
+      "kind": "consumer",
+      "provenance": {
+        "owner": "sandbox-ai",
+        "reference": "examples/sb06-independent-boundary-rubric.fixture.json",
+        "sha256": "d5d1ca63568acaf6dd94036934075e7bff87e29f7233c33b8648fcfeeffc7b67",
+        "version": "1"
+      },
+      "statement": "Review status is separate from outcome and adoption."
+    }
+  ],
+  "decision": {
+    "consumer": "SB06 workflow verification",
+    "owner": "Sandbox synthetic workflow fixture",
+    "question": "Does the fixture preserve denial, unknown and failure states?"
+  },
+  "evaluator_scope": {
+    "agent_readable_roots": [
+      "examples/sb06-authorized-boundary-cases.fixture.json"
+    ],
+    "evaluator_only_roots": [
+      "examples/sb06-independent-boundary-rubric.fixture.json"
+    ],
+    "grader": "caller-supplied review; synthetic fixture has no human reviewer"
+  },
+  "format": "sandbox-trial-plan-1",
+  "frozen_at_utc": "2026-11-02T00:00:00+00:00",
+  "frozen_before_execution": true,
+  "limitations": [
+    "Synthetic fixture only; does not exercise a real product boundary.",
+    "No endpoint, provider, private data or host security settings are touched.",
+    "Authority and reviewer metadata are caller assertions and do not grant execution or adoption authority.",
+    "Independent human review is not performed in this fixture."
+  ],
+  "plan_id": "sb06-authorized-boundary-synthetic",
+  "record_kind": "synthetic",
+  "rubrics": {
+    "review": {
+      "provenance": {
+        "owner": "sandbox-ai",
+        "reference": "examples/sb06-independent-boundary-rubric.fixture.json"
+      },
+      "sha256": "d5d1ca63568acaf6dd94036934075e7bff87e29f7233c33b8648fcfeeffc7b67",
+      "version": "1"
+    }
+  },
+  "treatment": {
+    "arms": {
+      "baseline": "synthetic deny fixture",
+      "equipped": "synthetic missing/failed fixture"
+    },
+    "baseline_arm": "baseline",
+    "variables": [
+      {
+        "path": "identity.equipment",
+        "reason": "demonstration arms use separate synthetic fixture labels only"
+      }
+    ]
+  }
+}

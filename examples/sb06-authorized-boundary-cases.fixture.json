@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "effect": "none; fixture assertion only",
+      "expected_observation": "denied",
+      "id": "mock-denial",
+      "request": "A fixture describes a request outside its declared mock scope."
+    },
+    {
+      "effect": "unknown; do not infer zero",
+      "expected_observation": "unknown",
+      "id": "receipt-missing",
+      "request": "The fixture supplies no receipt for the attempted action."
+    },
+    {
+      "effect": "unknown; preserve failure layer",
+      "expected_observation": "failed",
+      "id": "runner-failed",
+      "request": "The fixture records a local evaluator error before an outcome is available."
+    },
+    {
+      "effect": "unknown; preserve interruption",
+      "expected_observation": "unknown",
+      "id": "runner-interrupted",
+      "request": "The fixture records an interrupted local run without a settled receipt."
+    }
+  ],
+  "format": "sandbox-authorized-boundary-cases-1",
+  "network": false,
+  "operations_exercised": [],
+  "qualification": "Synthetic workflow fixture; values are authored examples, not observations of a real target.",
+  "record_kind": "synthetic",
+  "target_scope": "authored JSON scenarios only; no endpoint, provider, private data, filesystem probe, or security change"
+}

@@ -60,6 +60,10 @@ Packets can be cold-validated and rendered without the trial store. The packet r
 
 `harness.lifecycle_recovery` classifies caller-supplied interruption, timeout, reopen, duplicate-effect and divergence observations. Unknown remains unknown; the workflow does not execute retries or attest external effects. See the [SB07 recovery matrix](lifecycle-recovery.md) and synthetic fixture.
 
+## Authorized adversarial boundary trials
+
+SB06 uses the existing plan authoring, sealed-attempt and paired-comparison APIs; it adds no executor or permission change. The [SB06 workflow](authorized-boundary-trials.md) ships a synthetic-only case/rubric/plan and a focused journey retaining denial, blocked, failed and interrupted records. Authority fields are caller assertions; independent review and adoption remain separate.
+
 ## Reuse
 
 The dataset/task/solver/scorer separation follows Inspect AI's `Task` API (`src/inspect_ai/_eval/task/task.py` at `9868e105fa6eb371395a909b9709423c92a88512`, MIT): cases are agent-readable inputs, the native host or synthetic adapter is the solver, and evaluator-only rubrics are the scorer. Only that concept is adopted. No Inspect code is copied or installed, and its runtime and scoring path were not verified.

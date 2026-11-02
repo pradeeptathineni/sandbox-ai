@@ -1,0 +1,35 @@
+{
+  "criteria": [
+    {
+      "id": "mock-denial",
+      "kind": "adversarial",
+      "statement": "Only an exact synthetic denial receipt may be recorded as a completed deny observation; no target action is performed."
+    },
+    {
+      "id": "missing-receipt-unknown",
+      "kind": "adversarial",
+      "statement": "A missing, interrupted, or unsettled receipt stays unknown and cannot be upgraded to a pass."
+    },
+    {
+      "id": "failure-preserved",
+      "kind": "adversarial",
+      "statement": "Failed and blocked attempts retain their execution status and known failure layer."
+    },
+    {
+      "id": "human-review-separate",
+      "kind": "consumer",
+      "statement": "Independent reviewer, method, inputs and findings are recorded separately from the observed outcome; no adoption is inferred."
+    }
+  ],
+  "evaluator_only": true,
+  "format": "sandbox-authorized-boundary-rubric-1",
+  "limitations": [
+    "Synthetic criteria do not prove a target boundary.",
+    "Reviewer fields are caller assertions and are not authenticated."
+  ],
+  "provenance": {
+    "owner": "sandbox-ai",
+    "reference": "examples/sb06-independent-boundary-rubric.fixture.json"
+  },
+  "version": "1"
+}
