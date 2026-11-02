@@ -62,7 +62,7 @@ class GroundingCalibrationLifecycle(unittest.TestCase):
                 'unsupported', 'Second synthetic correction.', 'Reassessment changed the row again.', 'Reviewer one')
             self.assertEqual(correction2['payload']['prior_rating'], 'uncertain')
             self.assertEqual(correction2['payload']['prior_event_sha256'], correction['event_sha256'])
-            grounding_calibration.correct_rating(
+            correction3 = grounding_calibration.correct_rating(
                 store, anchor_sha, left['event_sha256'], keys[1]['armAlias'], keys[1]['questionId'],
                 'uncertain', 'Keep this row unresolved.', 'Available evidence remains unclear.', 'Reviewer one')
             self.assertEqual(left_path.read_bytes(), original_bytes, 'corrections append; old ratings stay byte-identical')
@@ -70,6 +70,8 @@ class GroundingCalibrationLifecycle(unittest.TestCase):
             self.assertEqual(len(history['events']), 6)
             self.assertEqual(history['reviewers']['Reviewer one']['effective_calibration']['counts']['unknown'], 1)
             self.assertEqual(history['reviewers']['Reviewer one']['effective_calibration']['counts']['disagreement'], 1)
+            self.assertEqual(correction3['payload']['calibration'],
+                             history['reviewers']['Reviewer one']['effective_calibration'])
             self.assertEqual(history['interreviewer']['counts']['unknown'], 1)
             self.assertTrue(all(event['payload'].get('reviewer_identity_status', 'caller-asserted-unverified')
                                 == 'caller-asserted-unverified' for event in history['events']

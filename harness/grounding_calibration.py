@@ -260,9 +260,18 @@ def correct_rating(store, anchor_set_sha256, review_event_sha256, arm_alias, que
             raise ValueError('correction row is outside the exact original blind review')
         prior = prior_events[-1] if prior_events else None
         prior_rating = prior['payload']['new_rating'] if prior else original['rating']
-        judgments = [{**row, 'rating': rating, 'rationale': rationale}
-                     if (row['armAlias'], row['questionId']) == key else row
-                     for row in source['payload']['judgments']]
+        judgments = [dict(row) for row in source['payload']['judgments']]
+        by_key = {(row['armAlias'], row['questionId']): row for row in judgments}
+        for event in events:
+            if event['event_type'] != 'correction' or event['payload']['review_event_sha256'] != review_sha:
+                continue
+            previous = event['payload']
+            corrected = by_key[(previous['armAlias'], previous['questionId'])]
+            corrected['rating'] = previous['new_rating']
+            corrected['rationale'] = previous['new_rationale']
+        current = by_key[key]
+        current['rating'] = rating
+        current['rationale'] = rationale
         return {'review_event_sha256': review_sha, 'armAlias': arm_alias, 'questionId': question_id,
                 'prior_event_sha256': prior['event_sha256'] if prior else review_sha,
                 'prior_rating': prior_rating, 'new_rating': rating,
