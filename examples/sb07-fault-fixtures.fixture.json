@@ -1,0 +1,59 @@
+{
+  "format": "sandbox-lifecycle-observations-1",
+  "observations": [
+    {
+      "id": "sb07-lost-reply-once-synthetic",
+      "operation_id": "synthetic-op-lost-reply",
+      "fault": "lost-reply",
+      "effect_key": "synthetic-effect-lost-reply",
+      "effect_count": 1,
+      "state": "completed",
+      "reopen_state": "completed"
+    },
+    {
+      "id": "sb07-process-crash-after-dispatch-synthetic",
+      "operation_id": "synthetic-op-process-crash",
+      "fault": "process-crash",
+      "effect_key": "synthetic-effect-process-crash",
+      "effect_count": 1,
+      "state": "unknown",
+      "reopen_state": "unknown"
+    },
+    {
+      "id": "sb07-timeout-before-readback-synthetic",
+      "operation_id": "synthetic-op-timeout-before-readback",
+      "fault": "timeout",
+      "effect_key": "synthetic-effect-timeout-before-readback",
+      "effect_count": 0,
+      "state": "unknown",
+      "reopen_state": "unknown"
+    },
+    {
+      "id": "sb07-timeout-readback-completes-synthetic",
+      "operation_id": "synthetic-op-timeout-after-readback",
+      "fault": "timeout",
+      "effect_key": "synthetic-effect-timeout-after-readback",
+      "effect_count": 1,
+      "state": "unknown",
+      "reopen_state": "completed"
+    },
+    {
+      "id": "sb07-race-duplicate-submit-synthetic",
+      "operation_id": "synthetic-op-race-duplicate-submit",
+      "fault": "duplicate-submit",
+      "effect_key": "synthetic-effect-race-duplicate-submit",
+      "effect_count": 2,
+      "state": "completed",
+      "reopen_state": "completed"
+    },
+    {
+      "id": "sb07-late-write-diverged-synthetic",
+      "operation_id": "synthetic-op-late-write",
+      "fault": "late-write",
+      "effect_key": "synthetic-effect-late-write",
+      "effect_count": 1,
+      "state": "partial",
+      "reopen_state": "completed"
+    }
+  ]
+}
