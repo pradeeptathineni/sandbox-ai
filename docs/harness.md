@@ -28,6 +28,26 @@ python3 -m harness.trials compare --store <store> --plan-sha256 <sha> --format m
 
 The [Context consumer recipe](../recipes/context-consumer/README.md) is the first client.
 
+## Frozen experiment manifests
+
+`harness.experiment_manifests` groups exact arms from existing frozen plans into a content-addressed SB01 manifest in the same trial store. It creates no plan or attempt and reports execution as blocked. Plan identity, authority completeness and recovery behavior are documented in [experiment manifests](experiment-manifests.md).
+
+## Explicit paired comparison evidence
+
+`harness.paired_comparison` composes caller-selected pairs from one frozen plan and its sealed attempts. It calls `trials.compare_pair`; it does not execute trials, match attempts by order, infer missing partners or modify existing records. Unselected attempts remain listed separately. The `sandbox-paired-comparison-evidence-1` packet embeds exact receipts and digests, the plan, structural comparisons, context strata, criterion outcome counts with denominators, resource accounting, caller review and a decision-owner handoff.
+
+The caller selects 1–32 distinct baseline/candidate pairs from one plan, using the same candidate arm throughout. Reviewer labels, selection rationale, task/dataset/model/fixture scope and uncertainty notes remain caller assertions. Confounded and incompletely identified pairs remain visible and separate from known strata. Counts describe selected pairs and do not establish general performance, causality or superiority.
+
+Resource scope is explicit per metric: `per-run`, `accounting-window` or `unknown`. Missing values remain unavailable. Per-run deltas require matching unit, denominator, semantics, measurement kind and source. Totals appear only for complete per-run groups with matching context and metadata. Window values remain as supplied and are never added or subtracted across windows.
+
+```sh
+python3 -m harness.paired_comparison create --store <store> --plan-sha256 <plan-sha> \
+  --selection selected-pairs.json --review comparison-review.json --output comparison.json
+python3 -m harness.paired_comparison render --input comparison.json --format markdown
+```
+
+Packets can be cold-validated and rendered without the trial store. The packet records a handoff for the plan's named decision owner, but no adoption choice or authority. Its digest binds the selected receipts and caller review; a cold read does not regenerate missing source evidence.
+
 ## Reuse
 
 The dataset/task/solver/scorer separation follows Inspect AI's `Task` API (`src/inspect_ai/_eval/task/task.py` at `9868e105fa6eb371395a909b9709423c92a88512`, MIT): cases are agent-readable inputs, the native host or synthetic adapter is the solver, and evaluator-only rubrics are the scorer. Only that concept is adopted. No Inspect code is copied or installed, and its runtime and scoring path were not verified.
