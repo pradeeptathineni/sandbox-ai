@@ -175,8 +175,8 @@ def _events(store, anchor_sha):
     return events
 
 
-def _append(store, anchor_sha, event_type, payload):
-    anchor = _load_anchor(store, anchor_sha)
+def _append(store, anchor_sha, event_type, build_payload):
+    anchor_sha = _digest(anchor_sha, 'anchor_set_sha256')
     root = Path(store) / 'events' / anchor_sha
     root.mkdir(parents=True, exist_ok=True)
     lock = root / '.append-lock'
@@ -186,7 +186,9 @@ def _append(store, anchor_sha, event_type, payload):
     except FileExistsError as exc:
         raise ValueError('calibration history is locked by another or interrupted append; preserve and inspect it') from exc
     try:
+        anchor = _load_anchor(store, anchor_sha)
         events = _events(store, anchor_sha)
+        payload = build_payload(anchor, events)
         body = {'format': EVENT_FORMAT, 'anchor_set_sha256': anchor['anchor_set_sha256'],
                 'sequence': len(events) + 1, 'parent_sha256': events[-1]['event_sha256'] if events else None,
                 'event_type': event_type, 'payload': payload}
@@ -217,55 +219,58 @@ def _agreement(reference, judgments):
 
 
 def record_review(store, anchor_set_sha256, reviewer, judgments):
-    anchor = _load_anchor(store, anchor_set_sha256)
     reviewer = _text(reviewer, 'reviewer', 200)
-    if reviewer.casefold() == anchor['reference_provenance']['author'].casefold():
-        raise ValueError('reviewer must differ from caller-declared anchor author')
-    checked = _ratings(anchor['blind_view'], judgments)
-    existing = _events(store, anchor_set_sha256)
-    if any(row['event_type'] == 'review' and row['payload']['reviewer'].casefold() == reviewer.casefold()
-           for row in existing):
-        raise ValueError('reviewer already has a retained review; submit a correction event instead')
-    payload = {'reviewer': reviewer, 'reviewer_identity_status': 'caller-asserted-unverified',
-               'judgments': checked,
-               'calibration': _agreement(anchor['reference_ratings'], checked)}
-    return _append(store, anchor_set_sha256, 'review', payload)
+
+    def build(anchor, existing):
+        if reviewer.casefold() == anchor['reference_provenance']['author'].casefold():
+            raise ValueError('reviewer must differ from caller-declared anchor author')
+        if any(row['event_type'] == 'review' and row['payload']['reviewer'].casefold() == reviewer.casefold()
+               for row in existing):
+            raise ValueError('reviewer already has a retained review; submit a correction event instead')
+        checked = _ratings(anchor['blind_view'], judgments)
+        return {'reviewer': reviewer, 'reviewer_identity_status': 'caller-asserted-unverified',
+                'judgments': checked,
+                'calibration': _agreement(anchor['reference_ratings'], checked)}
+
+    return _append(store, anchor_set_sha256, 'review', build)
 
 
 def correct_rating(store, anchor_set_sha256, review_event_sha256, arm_alias, question_id,
                    rating, rationale, correction_reason, reviewer):
-    anchor = _load_anchor(store, anchor_set_sha256)
     review_sha = _digest(review_event_sha256, 'review_event_sha256')
-    events = _events(store, anchor_set_sha256)
-    source = next((row for row in events if row['event_sha256'] == review_sha and row['event_type'] == 'review'), None)
-    if source is None:
-        raise ValueError('correction must reference an existing immutable review event')
     reviewer = _text(reviewer, 'reviewer', 200)
-    if reviewer.casefold() != source['payload']['reviewer'].casefold():
-        raise ValueError('correction reviewer must match the original review author')
-    key = (arm_alias, question_id)
-    prior_events = [row for row in events if row['event_type'] == 'correction' and
-                    row['payload']['review_event_sha256'] == review_sha and
-                    (row['payload']['armAlias'], row['payload']['questionId']) == key]
-    original = next((row for row in source['payload']['judgments']
-                     if (row['armAlias'], row['questionId']) == key), None)
-    if original is None or arm_alias not in grounding_review.ALIASES:
-        raise ValueError('correction row is outside the exact original blind review')
-    prior = prior_events[-1] if prior_events else None
-    prior_rating = prior['payload']['new_rating'] if prior else original['rating']
+    rationale = _text(rationale, 'rationale', 1000)
+    correction_reason = _text(correction_reason, 'correction_reason', 1000)
     if rating not in RATINGS:
         raise ValueError('correction rating is invalid')
-    payload = {'review_event_sha256': review_sha, 'armAlias': arm_alias, 'questionId': question_id,
-               'prior_event_sha256': prior['event_sha256'] if prior else review_sha,
-               'prior_rating': prior_rating, 'new_rating': rating,
-               'new_rationale': _text(rationale, 'rationale', 1000),
-               'correction_reason': _text(correction_reason, 'correction_reason', 1000),
-               'reviewer': reviewer,
-               'calibration': _agreement(anchor['reference_ratings'], [
-                   {**row, 'rating': rating, 'rationale': _text(rationale, 'rationale', 1000)}
-                   if (row['armAlias'], row['questionId']) == key else row
-                   for row in source['payload']['judgments']])}
-    return _append(store, anchor_set_sha256, 'correction', payload)
+    key = (arm_alias, question_id)
+
+    def build(anchor, events):
+        source = next((row for row in events if row['event_sha256'] == review_sha and row['event_type'] == 'review'), None)
+        if source is None:
+            raise ValueError('correction must reference an existing immutable review event')
+        if reviewer.casefold() != source['payload']['reviewer'].casefold():
+            raise ValueError('correction reviewer must match the original review author')
+        prior_events = [row for row in events if row['event_type'] == 'correction' and
+                        row['payload']['review_event_sha256'] == review_sha and
+                        (row['payload']['armAlias'], row['payload']['questionId']) == key]
+        original = next((row for row in source['payload']['judgments']
+                         if (row['armAlias'], row['questionId']) == key), None)
+        if original is None or arm_alias not in grounding_review.ALIASES:
+            raise ValueError('correction row is outside the exact original blind review')
+        prior = prior_events[-1] if prior_events else None
+        prior_rating = prior['payload']['new_rating'] if prior else original['rating']
+        judgments = [{**row, 'rating': rating, 'rationale': rationale}
+                     if (row['armAlias'], row['questionId']) == key else row
+                     for row in source['payload']['judgments']]
+        return {'review_event_sha256': review_sha, 'armAlias': arm_alias, 'questionId': question_id,
+                'prior_event_sha256': prior['event_sha256'] if prior else review_sha,
+                'prior_rating': prior_rating, 'new_rating': rating,
+                'new_rationale': rationale, 'correction_reason': correction_reason,
+                'reviewer': reviewer,
+                'calibration': _agreement(anchor['reference_ratings'], judgments)}
+
+    return _append(store, anchor_set_sha256, 'correction', build)
 
 
 def read_history(store, anchor_set_sha256):
