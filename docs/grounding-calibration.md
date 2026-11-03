@@ -18,4 +18,9 @@ JSON
 
 `freeze-anchors` accepts the exact frozen packet JSON, aliases, reread Study rows, anchor provenance and one reference rating for every blinded A/B question row. `blind-session` returns the pinned rubric and rows with anchor labels withheld. `record-review` accepts one rating per row. `correct-rating` appends a correction linked to the exact review event. `read-history` cold-verifies the anchor digest and event chain.
 
+For a reviewer-facing form, [generate an offline review sheet](offline-review.md)
+with `--format html` on `blind-session`. It downloads the existing `record-review`
+request for explicit CLI import. No reference ratings or author provenance are
+included, and no browser operation writes to the owner store.
+
 This record flow uses only supplied packet bytes and supplied text. It runs no model, retriever, provider or participant study. The synthetic test fixture does not claim real-world quality or reviewer competence. The caller remains responsible for data rights and for choosing a new, separate store for private material.

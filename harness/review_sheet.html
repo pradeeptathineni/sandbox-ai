@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>Sandbox blinded review</title>
+  <style>
+    :root { color-scheme: light dark; font: 1rem/1.6 system-ui, sans-serif; }
+    body { max-width: 58rem; margin: auto; padding: 1.25rem; overflow-wrap: anywhere; }
+    h1, h2, h3, legend { line-height: 1.3; }
+    h1 { font-size: 1.8rem; }
+    h2, legend { font-size: 1.25rem; font-weight: 700; }
+    fieldset { min-width: 0; margin: 2rem 0; padding: 1rem; border: 1px solid GrayText; border-radius: .4rem; }
+    label { display: block; font-weight: 600; margin-top: 1rem; }
+    input, textarea, button { box-sizing: border-box; max-width: 100%; font: inherit; padding: .6rem; }
+    input, textarea { width: 100%; }
+    textarea { min-height: 7rem; resize: vertical; }
+    .rating-options { border: 0; margin: 1rem 0; padding: 0; }
+    .rating-options legend { font-size: 1rem; }
+    .choice { display: flex; align-items: baseline; gap: .5rem; font-weight: 400; margin-top: .4rem; }
+    .choice input { width: auto; flex: none; }
+    button { cursor: pointer; margin-top: 1rem; }
+    :focus-visible { outline: 3px solid Highlight; outline-offset: 3px; }
+    pre, blockquote { white-space: pre-wrap; overflow-wrap: anywhere; margin: .75rem 0; padding: .75rem; border-left: 3px solid GrayText; font: inherit; }
+    code { overflow-wrap: anywhere; }
+    .notice { border: 1px solid GrayText; border-radius: .4rem; padding: .75rem; }
+    #status { min-height: 2rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Blinded evidence review</h1>
+    <p class="notice">Reference ratings are withheld. Read each question, answer and retained excerpt, then choose your own rating. This file makes no network request and submits nothing automatically. Your judgments and reviewer label remain caller assertions, not proof of truth, accuracy or adoption.</p>
+    <p>Keep this file and its downloaded request private. Ratings stay in memory and are lost when this page closes. Download your request before leaving.</p>
+    <details><summary>Frozen session identity</summary><p>Anchor set: <code id="identity"></code></p><p>Strategy names use the existing owner's A/B projection. Source text may still identify its subject or origin.</p></details>
+    <section aria-labelledby="rubric-heading">
+      <h2 id="rubric-heading">Review criterion</h2>
+      <p id="criterion"></p>
+      <ul id="ratings"></ul>
+    </section>
+    <form id="review-form">
+      <label for="reviewer">Reviewer label</label>
+      <input id="reviewer" required maxlength="200" autocomplete="off" aria-describedby="reviewer-help">
+      <p id="reviewer-help">Use a pseudonym where appropriate. It must differ from the anchor author's label and any reviewer already recorded for this session. The native owner checks this on import.</p>
+      <div id="rows"></div>
+      <button type="submit">Download review request</button>
+      <p id="status" role="status" aria-live="polite"></p>
+    </form>
+    <section aria-labelledby="next-heading">
+      <h2 id="next-heading">Record the review explicitly</h2>
+      <p>The download is an ordinary JSON request. In the same Sandbox checkout, pass it to the existing owner with the same private store:</p>
+      <pre>python3 -m harness.grounding_calibration --store /PRIVATE_STORE &lt; /PRIVATE_DOWNLOAD/review-request.json</pre>
+      <p>The owner checks exact row coverage and the frozen session before appending one review. Repeating a recorded reviewer refuses. A correction uses the existing correction operation. Keep the resulting receipt, then cold-read history separately. A download alone stores no review.</p>
+    </section>
+    <noscript><p class="notice">JavaScript is needed for the local form and download. Use the JSON blind-session output and the existing CLI if scripting is disabled.</p></noscript>
+  </main>
+  <script id="blind-session" type="application/json">__SANDBOX_BLIND_SESSION__</script>
+  <script>
+    'use strict';
+    const session = JSON.parse(document.getElementById('blind-session').textContent);
+    const status = document.getElementById('status');
+    const create = (tag, text, parent) => {
+      const element = document.createElement(tag);
+      if (text !== undefined) element.textContent = text;
+      if (parent) parent.append(element);
+      return element;
+    };
+    document.getElementById('identity').textContent = session.anchor_set_sha256;
+    document.getElementById('criterion').textContent = session.rubric.criterion;
+    for (const rating of session.rubric.ratings) {
+      create('li', `${rating.value}: ${rating.meaning}`, document.getElementById('ratings'));
+    }
+    const controls = session.view.map((row, index) => {
+      const field = create('fieldset', undefined, document.getElementById('rows'));
+      create('legend', `Arm ${row.armAlias} · ${row.questionId}`, field);
+      create('h3', 'Question', field);
+      create('p', row.question, field);
+      create('h3', 'Answer', field);
+      create('p', `Answer status: ${row.answerStatus}. Retained text: ${row.availability}.`, field);
+      create('pre', row.answer === null ? 'Answer text was not provided.' : row.answer, field);
+      create('h3', 'Retained evidence', field);
+      if (!row.evidenceExcerpts.length) create('p', 'No excerpts were provided.', field);
+      for (const [index, excerpt] of row.evidenceExcerpts.entries()) {
+        const evidence = create('details', undefined, field);
+        evidence.open = excerpt.length <= 1200;
+        create('summary', `Retained excerpt ${index + 1} (full text)`, evidence);
+        create('blockquote', excerpt, evidence);
+      }
+      const options = create('fieldset', undefined, field);
+      options.className = 'rating-options';
+      create('legend', 'Your rating (required)', options);
+      const ratings = session.rubric.ratings.map(option => {
+        const choice = create('label', undefined, options);
+        choice.className = 'choice';
+        const input = create('input', undefined, choice);
+        input.type = 'radio';
+        input.name = `rating-${index}`;
+        input.value = option.value;
+        input.required = true;
+        create('span', option.value, choice);
+        return input;
+      });
+      const rationaleLabel = create('label', 'Your rationale (required, up to 1,000 characters)', field);
+      rationaleLabel.htmlFor = `rationale-${index}`;
+      const rationale = create('textarea', undefined, field);
+      rationale.id = rationaleLabel.htmlFor;
+      rationale.required = true;
+      rationale.maxLength = 1000;
+      return {row, ratings, rationale};
+    });
+    document.getElementById('review-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const reviewer = document.getElementById('reviewer').value.trim();
+      if (!reviewer) {
+        status.textContent = 'Enter a nonempty reviewer label.';
+        document.getElementById('reviewer').focus();
+        return;
+      }
+      const incomplete = controls.find(({ratings, rationale}) => !ratings.some(input => input.checked) || !rationale.value.trim());
+      if (incomplete) {
+        status.textContent = 'Choose a rating and enter a nonempty rationale for every row, including rows not assessed.';
+        (!incomplete.ratings.some(input => input.checked) ? incomplete.ratings[0] : incomplete.rationale).focus();
+        return;
+      }
+      const request = {
+        schema: 'sandbox.grounding-calibration-request.v1',
+        operation: 'record-review',
+        input: {
+          anchorSetSha256: session.anchor_set_sha256,
+          reviewer,
+          judgments: controls.map(({row, ratings, rationale}) => ({
+            armAlias: row.armAlias, questionId: row.questionId,
+            rating: ratings.find(input => input.checked).value, rationale: rationale.value.trim()
+          }))
+        }
+      };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(request, null, 2) + '\n'], {type: 'application/json'}));
+      const link = create('a', undefined, document.body);
+      link.href = url;
+      link.download = 'review-request.json';
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = 'Download requested. No review has been stored. Pass the JSON request to the native owner to record it.';
+    });
+  </script>
+</body>
+</html>

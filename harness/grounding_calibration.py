@@ -353,14 +353,22 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--store', type=Path, required=True)
+    parser.add_argument('--format', choices=('json', 'html'), default='json',
+                        help='HTML is available only for the read-only blind-session operation.')
     args = parser.parse_args()
     raw = sys.stdin.buffer.read(MAX_BYTES + 1)
     if len(raw) > MAX_BYTES:
         raise SystemExit('input exceeds limit')
     try:
         request = json.loads(raw)
+        if args.format == 'html' and (not isinstance(request, dict) or request.get('operation') != 'blind-session'):
+            raise ValueError('HTML output supports only the read-only blind-session operation')
         result = operate(request, args.store)
-        sys.stdout.write(json.dumps(result, ensure_ascii=False, separators=(',', ':'), sort_keys=True) + '\n')
+        if args.format == 'html':
+            from .review_sheet import render
+            sys.stdout.write(render(result['result']))
+        else:
+            sys.stdout.write(json.dumps(result, ensure_ascii=False, separators=(',', ':'), sort_keys=True) + '\n')
     except Exception as exc:
         raise SystemExit(str(exc)) from exc
 

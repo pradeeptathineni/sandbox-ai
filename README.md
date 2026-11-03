@@ -14,6 +14,11 @@ The [Agent-Reach public trial](evidence/agent-reach-1.5.0-public-trial.md) recor
 
 The [five-task usability protocol](docs/usability.md) validates task observations and what a participant believes was sent. Its committed example is synthetic; real human sessions and design acceptance remain separate.
 
+The [offline evidence review sheet](docs/offline-review.md) presents a frozen
+blinded session in a local browser and downloads a manual review request for
+explicit native admission. Reference ratings stay withheld. It runs no model
+and submits nothing automatically.
+
 Keep personal locations, original private receipts and migration maps with their private owner. Public entries require a separate content/provenance review. Repository checks establish structure, never usefulness. [Repository guidance](AGENTS.md) describes maintenance.
 
 Licensed under [MIT](LICENSE), following the sibling AI projects. Context AI influences are identified in the [source map](docs/context-reuse.md). Its referenced contracts remain owned there.
