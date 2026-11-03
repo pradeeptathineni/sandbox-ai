@@ -1,0 +1,15 @@
+{
+  "format": "sandbox-usability-capture-1",
+  "protocol_sha256": "b5f86cc180ab18f66321a4b88d3740526ad443ff3953520dc2202a36c3de191c",
+  "session_id": "synthetic-example",
+  "participant_group": "first-time",
+  "source": "synthetic",
+  "app_revision": "0000000000000000000000000000000000000000",
+  "observations": [
+    {"task_id": "find-story", "outcome": "completed", "wrong_turns": [], "belief_about_sent": null, "artifacts": []},
+    {"task_id": "inspect-source", "outcome": "partial", "wrong_turns": ["Opened the summary before the cited source."], "belief_about_sent": null, "artifacts": []},
+    {"task_id": "send-selected-source", "outcome": "not-run", "wrong_turns": [], "belief_about_sent": null, "artifacts": []},
+    {"task_id": "save-notebook", "outcome": "not-run", "wrong_turns": [], "belief_about_sent": null, "artifacts": []},
+    {"task_id": "recover-review", "outcome": "not-run", "wrong_turns": [], "belief_about_sent": null, "artifacts": []}
+  ]
+}

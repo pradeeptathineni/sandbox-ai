@@ -1,0 +1,37 @@
+{
+  "format": "sandbox-usability-protocol-1",
+  "target": "deep-ai",
+  "participant_groups": ["first-time", "experienced"],
+  "tasks": [
+    {
+      "id": "find-story",
+      "instruction": "Find a story related to an interest you choose and inspect why it appeared.",
+      "success_observation": "The person identifies one story and can point to its stated ranking reason and uncertainty.",
+      "send_question": "What, if anything, do you think the app sent outside this conversation?"
+    },
+    {
+      "id": "inspect-source",
+      "instruction": "Open one cited source and find the exact passage supporting a claim.",
+      "success_observation": "The person locates the source passage and can distinguish its text from the app's summary.",
+      "send_question": "What source text do you think has been selected or sent?"
+    },
+    {
+      "id": "send-selected-source",
+      "instruction": "Select one source for a draft message, review the draft, then send it deliberately.",
+      "success_observation": "The person can state which source was selected and what was actually sent after the explicit send action.",
+      "send_question": "What exact information do you believe left the draft when you sent it?"
+    },
+    {
+      "id": "save-notebook",
+      "instruction": "Review a story for a Notebook, save it explicitly, then reopen the saved Notebook.",
+      "success_observation": "The person finds the reopened Notebook and its source qualifications without creating a duplicate.",
+      "send_question": "Did saving this Notebook send anything to another person or provider?"
+    },
+    {
+      "id": "recover-review",
+      "instruction": "Review a pending approval, leave the view, return, and decide what to do next.",
+      "success_observation": "The person recognizes the retained pending state and does not mistake it for an approved or repeated action.",
+      "send_question": "What do you believe was approved, executed, or sent before you returned?"
+    }
+  ]
+}

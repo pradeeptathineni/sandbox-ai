@@ -12,6 +12,8 @@ The [Watchexec polling report](evidence/watchexec-polling/report.md) records rea
 
 The [Agent-Reach public trial](evidence/agent-reach-1.5.0-public-trial.md) records exact-source setup, paired web reads, same-byte RSS parsing and blocked upstream access. It recommends reusing current transports, not an additional adapter or broader evidence authority.
 
+The [five-task usability protocol](docs/usability.md) validates task observations and what a participant believes was sent. Its committed example is synthetic; real human sessions and design acceptance remain separate.
+
 Keep personal locations, original private receipts and migration maps with their private owner. Public entries require a separate content/provenance review. Repository checks establish structure, never usefulness. [Repository guidance](AGENTS.md) describes maintenance.
 
 Licensed under [MIT](LICENSE), following the sibling AI projects. Context AI influences are identified in the [source map](docs/context-reuse.md). Its referenced contracts remain owned there.
