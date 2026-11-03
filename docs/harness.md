@@ -48,6 +48,8 @@ python3 -m harness.paired_comparison render --input comparison.json --format mar
 
 Packets can be cold-validated and rendered without the trial store. The packet records a handoff for the plan's named decision owner, but no adoption choice or authority. Its digest binds the selected receipts and caller review; a cold read does not regenerate missing source evidence.
 
+The Markdown view leads with each selected pair's observed criterion states, then shows both recorded measurement values and why a delta is withheld. It keeps caller review, uncertainty and exact receipt hashes visible. The JSON view remains the canonical packet byte representation; the Markdown view makes no additional comparison or decision.
+
 ## Blinded evaluator calibration
 
 `harness.grounding_review` validates a frozen retrieval packet, masks arm names in a caller-supplied answer/evidence view, checks closed ratings, and reports descriptive two-reviewer agreement, disagreement and unknown counts. [Grounding calibration](grounding-calibration.md) freezes the exact rubric and caller-authored anchor ratings before review, then records reviews and corrections as append-only digest-linked events. Anchor agreement is descriptive only; reviewer identities and anchor labels are unauthenticated, and the workflow makes no real-world quality claim.

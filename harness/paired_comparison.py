@@ -271,6 +271,91 @@ def render_packet(packet):
     return trials.canonical(value).decode('utf-8')
 
 
+def _display(value):
+    """Keep caller-authored labels as text in the optional Markdown view."""
+    return (str(value).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            .replace('\\', '\\\\').replace('`', '\\`').replace('*', '\\*')
+            .replace('_', '\\_').replace('[', '\\[').replace(']', '\\]')
+            .replace('\r', ' ').replace('\n', ' '))
+
+
+def _measurement(value):
+    if value is None or value.get('value') is None:
+        return 'not recorded'
+    return f"{value['value']:.6g} {_display(value['unit'])} ({_display(value['source'])})"
+
+
+def render_markdown(packet):
+    """Explain a validated packet for review without changing its exact evidence."""
+    value = validate_packet(packet)
+    pairs = value['selected_pairs']
+    lines = [
+        '# Paired comparison evidence', '',
+        f"{len(pairs)} selected pair{'s' if len(pairs) != 1 else ''}; "
+        f"{len(value['unpaired_attempts'])} unselected attempt{'s' if len(value['unpaired_attempts']) != 1 else ''}; "
+        f"candidate arm: {_display(value['candidate_arm'])}.",
+        'Results describe these selected attempts only. They do not establish general performance, causality or adoption.',
+        '', '## Observed criteria', ''
+    ]
+    for pair in pairs:
+        lines.append(f"### {_display(pair['pair_id'])}")
+        lines.append('')
+        for criterion, result in sorted(pair['criterion_results'].items()):
+            lines.append(f"- {_display(criterion)}: baseline {_display(result['a'])}; "
+                         f"candidate {_display(result['b'])}.")
+        lines.append('')
+    lines += ['## Counts by recorded context', '']
+    for row in value['outcome_summary']:
+        counts = ', '.join(f"{_display(outcome.replace('-', ' '))} {len(ids)}"
+                           for outcome, ids in sorted(row['pair_ids_by_outcome'].items()))
+        lines.append(f"- {_display(row['criterion_id'])}: {counts}; "
+                     f"denominator {row['denominator']}; context {row['context_sha256'][:8]}…")
+    lines.append('')
+    lines += ['## Resource accounting (observed measurements)', '']
+    measurements = value['resource_accounting']['pairs']
+    if not measurements:
+        lines.append('No resource measurements were selected.')
+    for row in measurements:
+        baseline, candidate = row['baseline_measurement'], row['candidate_measurement']
+        lines.append(f"- {_display(row['pair_id'])} · {_display(row['name'])}: "
+                     f"baseline {_measurement(baseline)}; candidate {_measurement(candidate)}.")
+        if row['reported_delta'] is not None:
+            lines.append(f"  - Descriptive candidate minus baseline: {row['reported_delta']:.6g} "
+                         f"{_display(candidate['unit'])}.")
+        elif row['state'] == 'incomparable':
+            fields = ('unit', 'denominator', 'semantics', 'kind', 'source')
+            differing = [field for field in fields if baseline.get(field) != candidate.get(field)]
+            lines.append('  - No delta: measurement metadata differs' +
+                         (f" ({', '.join(differing)})." if differing else '.'))
+        else:
+            lines.append(f"  - No delta: {_display(row['state'].replace('-', ' '))}.")
+    review = value['review']
+    lines += ['', '## Caller review', '',
+              f"Recorded by: {_display(review['author'])}. Reviewer identity is caller supplied.", '',
+              f"Selection: {_display(review['pair_selection_rationale'])}", '',
+              f"Scope: {_display(review['scope_review'])}", '',
+              f"Uncertainty: {_display(review['uncertainty_review'])}", '']
+    if review['decision_owner_questions']:
+        lines += ['Questions for the decision owner:', '']
+        lines.extend(f"- {_display(question)}" for question in review['decision_owner_questions'])
+        lines.append('')
+    lines += [
+              '## Decision-owner handoff', '',
+              f"Owner: {_display(value['adoption_handoff']['decision_owner'])}; "
+              f"status: {_display(value['adoption_handoff']['status'])}.",
+              'Decision remains unrecorded; authority is not granted.', '',
+              '## Exact references', '',
+              f"- Frozen plan SHA-256: {value['plan']['sha256']}",
+              f"- Packet SHA-256: {value['packet_sha256']}"]
+    for pair in pairs:
+        lines.append(f"- {_display(pair['pair_id'])}: baseline receipt {pair['baseline']['sha256']}; "
+                     f"candidate receipt {pair['candidate']['sha256']}; "
+                     f"context SHA-256 {pair['context_sha256']}.")
+    lines += ['', '## Limits', '']
+    lines.extend(f"- {_display(item)}" for item in value['limitations'])
+    return '\n'.join(lines) + '\n'
+
+
 def main(argv=None):
     import argparse, json, sys
     from pathlib import Path
@@ -299,20 +384,7 @@ def main(argv=None):
         if args.format == 'json':
             sys.stdout.write(trials.canonical(packet).decode())
         else:
-            lines = ['# Paired comparison evidence', '',
-                     f"Explicit pairs: {len(packet['selected_pairs'])}; candidate arm: {packet['candidate_arm']}.",
-                     'Counts are descriptive and do not establish general performance or causality.', '',
-                     '## Outcomes', '']
-            for row in packet['outcome_summary']:
-                lines.append(f"- {row['criterion_id']} in {row['context_sha256']}: denominator {row['denominator']}; {row['pair_ids_by_outcome']}")
-            lines += ['', '## Resource accounting', '']
-            for row in packet['resource_accounting']['pairs']:
-                lines.append(f"- {row['pair_id']} · {row['name']} ({row['scope']}): {row['state']}; reported delta {row['reported_delta']}")
-            lines += ['', '## Decision-owner handoff', '',
-                      f"Owner: {packet['adoption_handoff']['decision_owner']}; status: {packet['adoption_handoff']['status']}.",
-                      'Decision remains unrecorded; authority is not granted.', '', '## Limitations', '']
-            lines.extend(f"- {item}" for item in packet['limitations'])
-            sys.stdout.write('\n'.join(lines) + '\n')
+            sys.stdout.write(render_markdown(packet))
     except (OSError, ValueError, TypeError, KeyError, trials.TrialError) as exc:
         parser.error(str(exc))
     return 0

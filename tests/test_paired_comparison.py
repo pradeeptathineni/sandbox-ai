@@ -95,6 +95,11 @@ class PairedComparisonWorkflow(unittest.TestCase):
             cold_packet = json.loads(saved_packet.read_bytes())
             self.assertEqual(paired_comparison.validate_packet(cold_packet), packet)
             self.assertEqual(paired_comparison.render_packet(cold_packet), trials.canonical(packet).decode())
+            summary = paired_comparison.render_markdown(cold_packet)
+            self.assertIn('baseline pass; candidate pass', summary)
+            self.assertIn('No delta: incomparable pair', summary)
+            self.assertIn(f"Packet SHA-256: {packet['packet_sha256']}", summary)
+            self.assertNotIn("{'tie':", summary)
             rendered = subprocess.run([
                 sys.executable, '-m', 'harness.paired_comparison', 'render',
                 '--input', str(saved_packet), '--format', 'markdown',
