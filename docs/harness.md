@@ -43,12 +43,17 @@ Resource scope is explicit per metric: `per-run`, `accounting-window` or `unknow
 ```sh
 python3 -m harness.paired_comparison create --store <store> --plan-sha256 <plan-sha> \
   --selection selected-pairs.json --review comparison-review.json --output comparison.json
-python3 -m harness.paired_comparison render --input comparison.json --format markdown
+python3 -m harness.paired_comparison preflight --input comparison.json
+python3 -m harness.paired_comparison render --input comparison.json --format markdown --publication
 ```
 
 Packets can be cold-validated and rendered without the trial store. The packet records a handoff for the plan's named decision owner, but no adoption choice or authority. Its digest binds the selected receipts and caller review; a cold read does not regenerate missing source evidence.
 
 The Markdown view leads with each selected pair's observed criterion states, then shows both recorded measurement values and why a delta is withheld. It keeps caller review, uncertainty and exact receipt hashes visible. The JSON view remains the canonical packet byte representation; the Markdown view makes no additional comparison or decision.
+
+Use `render --publication` for a report to share, including JSON output. It refuses before emitting any report if a derived measurement lacks explicit, nonempty unit, denominator, semantics, kind or source, if either arm declares those meanings unknown, or if their metadata differs. Selected resource metrics must declare `per-run` scope for arithmetic; explicit `unknown` or accounting-window scope refuses an embedded delta too. Complete metrics omitted from the resource selection still qualify through their recorded metadata. Noncomparable pairs with embedded deltas also refuse. The preflight checks every embedded structural measurement, so omitting a metric from the resource summary cannot hide missing meanings. It does not authenticate caller meanings or prove that a metric measures the intended outcome.
+
+`publication_preflight(packet)` returns only the exact source packet digest and qualification issues, with no derived values. Its CLI exits 1 when measurement publication is blocked. `render_packet` and `render_markdown` accept `publication=True` for the same gate. Historical create, comparison, cold-validation and default rendering retain their original arithmetic and packet bytes; they are not newly validated publication. Legacy Markdown and CLI diagnostics label that boundary. No sealed record is rewritten and no missing metadata is inferred. Keep incomplete originals, then obtain supported measurements for a new record or issue a separately qualified nonnumeric account.
 
 ## Blinded evaluator calibration
 

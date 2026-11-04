@@ -33,7 +33,8 @@ For a paired handoff, select exact completed denial attempt IDs and provide the 
 ```sh
 python3 -m harness.paired_comparison create --store <trial-store> --plan-sha256 <plan-sha256> \
   --selection selected-pairs.json --review comparison-review.json --output comparison.json
-python3 -m harness.paired_comparison render --input comparison.json --format markdown
+python3 -m harness.paired_comparison preflight --input comparison.json
+python3 -m harness.paired_comparison render --input comparison.json --format markdown --publication
 ```
 
 `python3 -m unittest discover -s tests -p 'test_sb06_boundary_workflow.py'` runs the offline synthetic journey in a fresh temporary store, cold-validates its paired packet, and checks the preserved completed-denial, blocked, failed and interrupted outcomes. It invokes no executor. The result tests record handling, not a real system's boundary behavior, security, or usefulness.

@@ -114,5 +114,120 @@ class PairedComparisonWorkflow(unittest.TestCase):
                 paired_comparison.validate_packet(changed)
 
 
+class MeasurementPublication(unittest.TestCase):
+    def packet(self, root, *, remove=(), meanings=None, scope='per-run', select=True, unknown_value=False):
+        store = Path(root) / 'store'
+        plan_sha = trials.freeze_plan(store, make_plan())
+        for identity, arm, value in [('b1', 'baseline', 10), ('c1', 'equipped', 12)]:
+            attempt = make_attempt(identity, arm)
+            metric = attempt['measurements']['output_tokens']
+            metric['value'] = value
+            for field in remove:
+                metric.pop(field)
+            metric.update(meanings or {})
+            if unknown_value:
+                metric.update(value=None, reason='Synthetic counter unavailable')
+            trials.seal_attempt(store, plan_sha, attempt, sealed_at='synthetic-fixed-time')
+        review = {
+            'format': paired_comparison.REVIEW_FORMAT, 'author': 'Synthetic audit author',
+            'pair_selection_rationale': 'One synthetic comparable pair.',
+            'scope_review': 'No real execution or independent review.',
+            'uncertainty_review': 'Missing meanings are unknown, never inferred.',
+            'resource_metrics': ([{'name': 'output_tokens', 'scope': scope,
+                                  'window_reference': 'fixture-window' if scope == 'accounting-window' else None,
+                                  'rationale': 'Supplied synthetic counter.'}] if select else []),
+            'decision_owner_questions': [],
+        }
+        packet = paired_comparison.create_packet(store, plan_sha, [{
+            'pair_id': 'pair', 'baseline_attempt_id': 'b1', 'candidate_attempt_id': 'c1',
+        }], review)
+        return packet, store
+
+    def test_missing_or_unknown_meanings_block_all_publication_output_without_changing_history(self):
+        cases = [({'remove': ('denominator',)}, True),
+                 ({'remove': ('semantics',)}, True),
+                 ({'meanings': {'denominator': None, 'semantics': ''}}, True),
+                 ({'meanings': {'denominator': 'unknown', 'semantics': 'unavailable'}}, True),
+                 ({'remove': ('denominator', 'semantics')}, False)]
+        for options, selected in cases:
+            with self.subTest(options=options, selected=selected), tempfile.TemporaryDirectory() as tmp:
+                packet, store = self.packet(tmp, select=selected, **options)
+                records = {p: p.read_bytes() for p in store.rglob('*.json')}
+                original = trials.canonical(packet)
+                report = paired_comparison.publication_preflight(packet)
+                self.assertFalse(report['measurement_publication_ready'])
+                self.assertEqual(report['packet_sha256'], packet['packet_sha256'])
+                self.assertNotIn('b_minus_a', json.dumps(report))
+                self.assertNotIn('reported_delta', json.dumps(report))
+                # The unsafe legacy arithmetic remains readable, not silently migrated.
+                self.assertEqual(packet['selected_pairs'][0]['structural_comparison']
+                                 ['measurements']['output_tokens']['b_minus_a'], 2)
+                self.assertEqual(paired_comparison.render_packet(packet), original.decode())
+                self.assertIn('Historical rendering', paired_comparison.render_markdown(packet))
+                for render in (paired_comparison.render_packet, paired_comparison.render_markdown):
+                    with self.assertRaisesRegex(trials.TrialError, 'publication preflight failed'):
+                        render(packet, publication=True)
+                self.assertEqual(paired_comparison.validate_packet(json.loads(original)), packet)
+                self.assertEqual(trials.canonical(packet), original)
+                self.assertEqual({p: p.read_bytes() for p in store.rglob('*.json')}, records)
+
+    def test_explicit_unknown_or_window_scope_cannot_hide_an_embedded_delta(self):
+        for scope in ('unknown', 'accounting-window'):
+            with self.subTest(scope=scope), tempfile.TemporaryDirectory() as tmp:
+                packet, _ = self.packet(tmp, scope=scope)
+                self.assertIsNone(packet['resource_accounting']['pairs'][0]['reported_delta'])
+                self.assertEqual(packet['selected_pairs'][0]['structural_comparison']
+                                 ['measurements']['output_tokens']['b_minus_a'], 2)
+                self.assertFalse(paired_comparison.publication_preflight(packet)['measurement_publication_ready'])
+
+    def test_complete_control_and_unavailable_values_preserve_qualified_behavior(self):
+        for selected, unknown in [(True, False), (False, False), (True, True)]:
+            with self.subTest(selected=selected, unknown=unknown), tempfile.TemporaryDirectory() as tmp:
+                packet, _ = self.packet(tmp, select=selected, unknown_value=unknown)
+                self.assertTrue(paired_comparison.publication_preflight(packet)['measurement_publication_ready'])
+                self.assertEqual(paired_comparison.render_packet(packet, publication=True),
+                                 trials.canonical(packet).decode())
+                summary = paired_comparison.render_markdown(packet, publication=True)
+                self.assertIn('publication preflight passed', summary)
+                path = Path(tmp) / 'comparison.json'
+                path.write_bytes(trials.canonical(packet))
+                rendered = subprocess.run([
+                    sys.executable, '-B', '-m', 'harness.paired_comparison', 'render',
+                    '--input', str(path), '--format', 'json', '--publication',
+                ], capture_output=True, text=True)
+                self.assertEqual(rendered.returncode, 0, rendered.stderr)
+                self.assertEqual(rendered.stdout, trials.canonical(packet).decode())
+                if selected and not unknown:
+                    self.assertEqual(packet['resource_accounting']['groups'][0]['complete_total'], 2)
+                if unknown:
+                    self.assertNotIn('b_minus_a', packet['selected_pairs'][0]
+                                     ['structural_comparison']['measurements']['output_tokens'])
+
+    def test_documented_cli_gate_refuses_before_stdout_and_preserves_packet(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            packet, _ = self.packet(tmp, remove=('denominator', 'semantics'), scope='unknown')
+            path = Path(tmp) / 'comparison.json'
+            original = trials.canonical(packet)
+            path.write_bytes(original)
+            command = [sys.executable, '-B', '-m', 'harness.paired_comparison']
+            report = subprocess.run(command + ['preflight', '--input', str(path)],
+                                    capture_output=True, text=True)
+            self.assertEqual(report.returncode, 1, report.stderr)
+            self.assertFalse(json.loads(report.stdout)['measurement_publication_ready'])
+            for format in ('json', 'markdown'):
+                refused = subprocess.run(command + ['render', '--input', str(path),
+                                                    '--format', format, '--publication'],
+                                         capture_output=True, text=True)
+                self.assertEqual(refused.returncode, 2)
+                self.assertEqual(refused.stdout, '')
+                self.assertIn('publication preflight failed', refused.stderr)
+            historical = subprocess.run(command + ['render', '--input', str(path), '--format', 'json'],
+                                        capture_output=True, text=True)
+            self.assertEqual(historical.returncode, 0, historical.stderr)
+            self.assertEqual(historical.stdout, original.decode())
+            self.assertIn('Historical rendering', historical.stderr)
+            self.assertEqual(path.read_bytes(), original)
+
+
 if __name__ == '__main__':
     unittest.main()

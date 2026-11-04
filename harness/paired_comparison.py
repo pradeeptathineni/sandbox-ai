@@ -266,8 +266,55 @@ def validate_packet(packet):
     return packet
 
 
-def render_packet(packet):
+def publication_preflight(packet):
+    """Check every derived measurement before publishing an unchanged packet.
+
+    Historical packet validation deliberately keeps its original arithmetic.
+    This read-only gate also checks the embedded structural comparison, where
+    a delta can exist even when resource accounting withholds it.
+    """
     value = validate_packet(packet)
+    scopes = {row['name']: row['scope'] for row in value['review']['resource_metrics']}
+    fields = ('unit', 'denominator', 'semantics', 'kind', 'source')
+    unknown = {'unknown', 'unspecified', 'unavailable', 'not recorded', 'none', 'n/a'}
+    issues = []
+    for pair in value['selected_pairs']:
+        comparison = pair['structural_comparison']
+        for name, row in comparison['measurements'].items():
+            if 'b_minus_a' not in row:
+                continue
+            reasons = []
+            for side in ('a', 'b'):
+                measurement = row[side]
+                for field in fields:
+                    text = measurement.get(field)
+                    if (not isinstance(text, str) or not text.strip()
+                            or text.strip().casefold() in unknown):
+                        reasons.append(f'{side}.{field} is missing or unknown')
+            if any(row['a'].get(field) != row['b'].get(field) for field in fields):
+                reasons.append('measurement metadata differs')
+            if name in scopes and scopes[name] != 'per-run':
+                reasons.append('per-run resource scope is not established')
+            if not comparison['outcome_comparable']:
+                reasons.append('the selected attempts are not outcome-comparable')
+            if reasons:
+                issues.append({'pair_id': pair['pair_id'], 'metric': name, 'reasons': reasons})
+    return {'format': 'sandbox-paired-publication-preflight-1',
+            'packet_sha256': value['packet_sha256'],
+            'measurement_publication_ready': not issues, 'issues': issues,
+            'qualification': 'Metadata and declared scope only; no authentication, usefulness, causality or adoption established.'}
+
+
+def _require_publication(packet):
+    _require(publication_preflight(packet)['measurement_publication_ready'],
+             'Measurement publication preflight failed; inspect with the preflight command. Historical records are unchanged.')
+
+
+def render_packet(packet, *, publication=False):
+    """Return original packet bytes; publication=True first checks measurement meanings."""
+    value = validate_packet(packet)
+    if publication:
+        _require_publication(value)
     return trials.canonical(value).decode('utf-8')
 
 
@@ -285,12 +332,17 @@ def _measurement(value):
     return f"{value['value']:.6g} {_display(value['unit'])} ({_display(value['source'])})"
 
 
-def render_markdown(packet):
+def render_markdown(packet, *, publication=False):
     """Explain a validated packet for review without changing its exact evidence."""
     value = validate_packet(packet)
+    if publication:
+        _require_publication(value)
     pairs = value['selected_pairs']
     lines = [
         '# Paired comparison evidence', '',
+        ('Measurement publication preflight passed; caller meanings and other evidence qualifications remain unverified.'
+         if publication else
+         'Historical rendering: original arithmetic is retained without measurement publication preflight.'), '',
         f"{len(pairs)} selected pair{'s' if len(pairs) != 1 else ''}; "
         f"{len(value['unpaired_attempts'])} unselected attempt{'s' if len(value['unpaired_attempts']) != 1 else ''}; "
         f"candidate arm: {_display(value['candidate_arm'])}.",
@@ -370,6 +422,10 @@ def main(argv=None):
     render = sub.add_parser('render')
     render.add_argument('--input', required=True, type=Path)
     render.add_argument('--format', choices=('json','markdown'), default='markdown')
+    render.add_argument('--publication', action='store_true',
+                        help='Refuse all output when any derived measurement lacks comparable explicit meanings and per-run scope')
+    preflight = sub.add_parser('preflight')
+    preflight.add_argument('--input', required=True, type=Path)
     args = parser.parse_args(argv)
     try:
         if args.command == 'create':
@@ -381,10 +437,17 @@ def main(argv=None):
                 handle.write(data)
             return 0
         packet = validate_packet(json.loads(args.input.read_bytes()))
+        if args.command == 'preflight':
+            report = publication_preflight(packet)
+            sys.stdout.write(trials.canonical(report).decode())
+            return 0 if report['measurement_publication_ready'] else 1
+        if not args.publication:
+            print('Historical rendering: measurement publication preflight was not applied. Use --publication for a report to share.',
+                  file=sys.stderr)
         if args.format == 'json':
-            sys.stdout.write(trials.canonical(packet).decode())
+            sys.stdout.write(render_packet(packet, publication=args.publication))
         else:
-            sys.stdout.write(render_markdown(packet))
+            sys.stdout.write(render_markdown(packet, publication=args.publication))
     except (OSError, ValueError, TypeError, KeyError, trials.TrialError) as exc:
         parser.error(str(exc))
     return 0
